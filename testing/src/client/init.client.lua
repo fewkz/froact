@@ -2,7 +2,6 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Roact = require(ReplicatedStorage.Packages.Roact)
 local froact = require(ReplicatedStorage.Common.myFroact)
 
 local Counter = froact.c({}, function(props: { text: string }, hooks)
@@ -64,6 +63,6 @@ local e = froact.ScreenGui(
 	})
 )
 
-Roact.mount(e, Players.LocalPlayer.PlayerGui, "Counter")
+froact.Roact.mount(e, Players.LocalPlayer.PlayerGui, "Counter")
 
 print("Hello world, from client!")
