@@ -2,6 +2,14 @@
 Froact is a wrapper around [Roact](https://github.com/Roblox/roact) and [Roact Hooks](https://github.com/Kampfkarren/roact-hooks)
 to make UI development easier via utilies and improved types.
 
+## Adding froact
+You can download the latest release of froact as a rbxm file from https://github.com/fewkz/froact/releases.
+
+Froact can be added to your project via [Wally](https://wally.run/) by adding this line under dependencies.
+```toml
+froact = "fewkz/froact@0.1.0"
+```
+
 ## How to use
 Froact needs to be configured in order to be used:
 ```lua
@@ -16,6 +24,8 @@ local froact = baseFroact.configure({
 ```
 Configuration is where you give froact a reference to Roact and RoactHooks.
 You can also set default properties to be applied to all elements froact creates.
+
+This configured version of froact should be used, not the base froact module.
 
 ## Features
 `froact.c` lets you create a functional component.
