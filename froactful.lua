@@ -56,11 +56,6 @@ local function newList(roact)
 			local className = if isRobloxClass
 				then element.component
 				else element.component.__componentName
-			if count[className] == nil then
-				count[className] = 1
-			else
-				count[className] += 1
-			end
 
 			local sortType = if not isRobloxClass
 				then "Component"
@@ -69,15 +64,24 @@ local function newList(roact)
 					then "Instance"
 					else "None"
 
-			local instanceName = if config.key
-					and element.props[config.key]
+			local key = if config.key and element.props[config.key]
 				then element.props[config.key]
-				else className .. " " .. count[className]
+				else className
 			if config.orderByName and sortType ~= "None" then
 				index += 1
-				instanceName = string.format(nameFormat, index, instanceName)
+				key = string.format(nameFormat, index, key)
 			end
-			dict[instanceName] = element
+			if count[key] == 1 then
+				dict[key .. " " .. count[key]] = dict[key]
+				dict[key] = nil
+			end
+			if count[key] then
+				count[key] += 1
+				dict[key .. " " .. count[key]] = element
+			else
+				count[key] = 1
+				dict[key] = element
+			end
 
 			if config.setOrder and sortType == "Instance" then
 				index += 1
