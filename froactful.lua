@@ -126,6 +126,7 @@ type UIBaseProps<Rbx> = InstanceProps<Rbx>
 type UIGridStyleLayoutProps<Rbx> = UILayoutProps<Rbx> & { FillDirection: Enum.FillDirection?, HorizontalAlignment: Enum.HorizontalAlignment?, SortOrder: Enum.SortOrder?, VerticalAlignment: Enum.VerticalAlignment? }
 type UILayoutProps<Rbx> = UIComponentProps<Rbx>
 type CameraProps = InstanceProps<Camera> & { CFrame: CFrame?, CameraSubject: Instance?, CameraType: Enum.CameraType?, DiagonalFieldOfView: number?, FieldOfView: number?, FieldOfViewMode: Enum.FieldOfViewMode?, Focus: CFrame?, HeadLocked: boolean?, HeadScale: number?, MaxAxisFieldOfView: number?, onFirstPersonTransition: Event<Camera, boolean>?, onInterpolationFinished: Event<Camera>? }
+type CanvasGroupProps = GuiObjectProps<CanvasGroup> & { GroupColor3: Color3?, GroupTransparency: number? }
 type FrameProps = GuiObjectProps<Frame> & { Style: Enum.FrameStyle? }
 type ImageButtonProps = GuiButtonProps<ImageButton> & { HoverImage: string?, Image: string?, ImageColor3: Color3?, ImageRectOffset: Vector2?, ImageRectSize: Vector2?, ImageTransparency: number?, PressedImage: string?, ResampleMode: Enum.ResamplerMode?, ScaleType: Enum.ScaleType?, SliceCenter: Rect?, SliceScale: number?, TileSize: UDim2? }
 type TextButtonProps = GuiButtonProps<TextButton> & { Font: Enum.Font?, FontFace: Font?, LineHeight: number?, MaxVisibleGraphemes: number?, RichText: boolean?, Text: string?, TextColor3: Color3?, TextScaled: boolean?, TextSize: number?, TextStrokeColor3: Color3?, TextStrokeTransparency: number?, TextTransparency: number?, TextTruncate: Enum.TextTruncate?, TextWrapped: boolean?, TextXAlignment: Enum.TextXAlignment?, TextYAlignment: Enum.TextYAlignment? }
@@ -137,6 +138,7 @@ type VideoFrameProps = GuiObjectProps<VideoFrame> & { Looped: boolean?, Playing:
 type ViewportFrameProps = GuiObjectProps<ViewportFrame> & { Ambient: Color3?, CurrentCamera: Camera?, ImageColor3: Color3?, ImageTransparency: number?, LightColor: Color3?, LightDirection: Vector3? }
 type BillboardGuiProps = LayerCollectorProps<BillboardGui> & { Active: boolean?, Adornee: Instance?, AlwaysOnTop: boolean?, Brightness: number?, ClipsDescendants: boolean?, DistanceLowerLimit: number?, DistanceStep: number?, DistanceUpperLimit: number?, ExtentsOffset: Vector3?, ExtentsOffsetWorldSpace: Vector3?, LightInfluence: number?, MaxDistance: number?, PlayerToHideFrom: Instance?, Size: UDim2?, SizeOffset: Vector2?, StudsOffset: Vector3?, StudsOffsetWorldSpace: Vector3? }
 type ScreenGuiProps = LayerCollectorProps<ScreenGui> & { DisplayOrder: number?, IgnoreGuiInset: boolean? }
+type AdGuiProps = SurfaceGuiBaseProps<AdGui> & { AdShape: Enum.AdShape? }
 type SurfaceGuiProps = SurfaceGuiBaseProps<SurfaceGui> & { AlwaysOnTop: boolean?, Brightness: number?, CanvasSize: Vector2?, ClipsDescendants: boolean?, LightInfluence: number?, PixelsPerStud: number?, SizingMode: Enum.SurfaceGuiSizingMode?, ToolPunchThroughDistance: number?, ZOffset: number? }
 type CornerWedgePartProps = BasePartProps<CornerWedgePart> & {  }
 type SeatProps = PartProps<Seat> & { Disabled: boolean? }
@@ -181,6 +183,10 @@ function froact.configure<Hooks>(config: {
 		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "FirstPersonTransition", "InterpolationFinished" })
 		return e("Camera", props, children)
 	end
+	local function CanvasGroup(props: CanvasGroupProps, children)
+		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "InputBegan", "InputChanged", "InputEnded", "MouseEnter", "MouseLeave", "MouseMoved", "MouseWheelBackward", "MouseWheelForward", "SelectionChanged", "SelectionGained", "SelectionLost", "TouchLongPress", "TouchPan", "TouchPinch", "TouchRotate", "TouchSwipe", "TouchTap" })
+		return e("CanvasGroup", props, children)
+	end
 	local function Frame(props: FrameProps, children)
 		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "InputBegan", "InputChanged", "InputEnded", "MouseEnter", "MouseLeave", "MouseMoved", "MouseWheelBackward", "MouseWheelForward", "SelectionChanged", "SelectionGained", "SelectionLost", "TouchLongPress", "TouchPan", "TouchPinch", "TouchRotate", "TouchSwipe", "TouchTap" })
 		return e("Frame", props, children)
@@ -224,6 +230,10 @@ function froact.configure<Hooks>(config: {
 	local function ScreenGui(props: ScreenGuiProps, children)
 		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "SelectionChanged" })
 		return e("ScreenGui", props, children)
+	end
+	local function AdGui(props: AdGuiProps, children)
+		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "SelectionChanged" })
+		return e("AdGui", props, children)
 	end
 	local function SurfaceGui(props: SurfaceGuiProps, children)
 		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "SelectionChanged" })
@@ -328,6 +338,7 @@ function froact.configure<Hooks>(config: {
 		c = newC(config.Roact, config.Hooks, config.unpureByDefault),
 		list = newList(config.Roact),
 		Camera = Camera,
+		CanvasGroup = CanvasGroup,
 		Frame = Frame,
 		ImageButton = ImageButton,
 		TextButton = TextButton,
@@ -339,6 +350,7 @@ function froact.configure<Hooks>(config: {
 		ViewportFrame = ViewportFrame,
 		BillboardGui = BillboardGui,
 		ScreenGui = ScreenGui,
+		AdGui = AdGui,
 		SurfaceGui = SurfaceGui,
 		CornerWedgePart = CornerWedgePart,
 		Part = Part,

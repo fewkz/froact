@@ -20,9 +20,6 @@ EXCLUDE = [
     "RemoteEvent",
     "ProximityPrompt",
     "ProximityPromptService",
-    # They may break luau-lsp because they're new and not defined yet
-    "CanvasGroup",
-    "AdGui",
 ]
 # Whether froactful tries to simplify types by unioning super class types.
 # luau doesn't properly infer parameters to signals when they're not completely inlined.
