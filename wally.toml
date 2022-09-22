@@ -1,0 +1,7 @@
+[package]
+name = "fewkz/froact"
+version = "0.1.0"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+exclude = ["*"]
+include = ["froact.lua", "froactful.lua", "default.project.json"]

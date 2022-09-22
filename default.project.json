@@ -1,0 +1,9 @@
+{
+    "name": "froact",
+    "tree": {
+      "$path": "froact.lua",
+      "ful": {
+        "$path": "froactful.lua"
+      }
+    }
+  }

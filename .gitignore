@@ -1,0 +1,13 @@
+# Project place file
+/froact testing.rbxl
+
+# Roblox Studio lock files
+/*.rbxlx.lock
+/*.rbxl.lock
+
+# luau-lsp
+sourcemap.json
+
+# Wally
+wally.lock
+**/Packages/**
