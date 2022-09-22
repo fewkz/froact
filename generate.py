@@ -313,7 +313,7 @@ def has_ancestor(klass, ancestor):
 @cache
 def define_class_signals(klass: str):
     fields = get_parsed_class_fields_recursive(klass)
-    signal_fields = {f for f in fields if f[1].startswith("RBXScriptSignal")}
+    signal_fields = sorted(f for f in fields if f[1].startswith("RBXScriptSignal"))
     signal_names = ", ".join('"' + f + '"' for (f, _) in signal_fields)
     return f"\n\t\tapplyEvent(props, {{ {signal_names} }})"
     # return tuple(
