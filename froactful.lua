@@ -119,6 +119,7 @@ local function newC<Hooks>(
 	end
 end
 
+-- stylua: ignore start
 type Event<Rbx, A...> = (rbx: Rbx, A...) -> ()
 type InstanceProps<Rbx> = { Archivable: boolean?, Name: string?, Parent: Instance?, onAncestryChanged: Event<Rbx, Instance, Instance>?, onAttributeChanged: Event<Rbx, string>?, onChanged: Event<Rbx, string>?, onChildAdded: Event<Rbx, Instance>?, onChildRemoved: Event<Rbx, Instance>?, onDescendantAdded: Event<Rbx, Instance>?, onDescendantRemoving: Event<Rbx, Instance>?, onDestroying: Event<Rbx>? }
 type GuiObjectProps<Rbx> = GuiBase2dProps<Rbx> & { Active: boolean?, AnchorPoint: Vector2?, AutomaticSize: Enum.AutomaticSize?, BackgroundColor3: Color3?, BackgroundTransparency: number?, BorderColor3: Color3?, BorderMode: Enum.BorderMode?, BorderSizePixel: number?, ClipsDescendants: boolean?, LayoutOrder: number?, NextSelectionDown: GuiObject?, NextSelectionLeft: GuiObject?, NextSelectionRight: GuiObject?, NextSelectionUp: GuiObject?, Position: UDim2?, Rotation: number?, Selectable: boolean?, SelectionImageObject: GuiObject?, SelectionOrder: number?, Size: UDim2?, SizeConstraint: Enum.SizeConstraint?, Transparency: number?, Visible: boolean?, ZIndex: number?, onInputBegan: Event<Rbx, InputObject>?, onInputChanged: Event<Rbx, InputObject>?, onInputEnded: Event<Rbx, InputObject>?, onMouseEnter: Event<Rbx, number, number>?, onMouseLeave: Event<Rbx, number, number>?, onMouseMoved: Event<Rbx, number, number>?, onMouseWheelBackward: Event<Rbx, number, number>?, onMouseWheelForward: Event<Rbx, number, number>?, onSelectionGained: Event<Rbx>?, onSelectionLost: Event<Rbx>?, onTouchLongPress: Event<Rbx, { any }, Enum.UserInputState>?, onTouchPan: Event<Rbx, { any }, Vector2, Vector2, Enum.UserInputState>?, onTouchPinch: Event<Rbx, { any }, number, number, Enum.UserInputState>?, onTouchRotate: Event<Rbx, { any }, number, number, Enum.UserInputState>?, onTouchSwipe: Event<Rbx, Enum.SwipeDirection, number>?, onTouchTap: Event<Rbx, { any }>? }
@@ -175,7 +176,7 @@ type UITableLayoutProps = UIGridStyleLayoutProps<UITableLayout> & { FillEmptySpa
 type UIPaddingProps = UIComponentProps<UIPadding> & { PaddingBottom: UDim?, PaddingLeft: UDim?, PaddingRight: UDim?, PaddingTop: UDim? }
 type UIScaleProps = UIComponentProps<UIScale> & { Scale: number? }
 type UIStrokeProps = UIComponentProps<UIStroke> & { ApplyStrokeMode: Enum.ApplyStrokeMode?, Color: Color3?, Enabled: boolean?, LineJoinMode: Enum.LineJoinMode?, Thickness: number?, Transparency: number? }
--- stylua: ignore
+-- stylua: ignore end
 function froact.configure<Hooks>(config: {
 	Roact: any,
 	Hooks: HookFunction<any, Hooks>,
@@ -189,10 +190,11 @@ function froact.configure<Hooks>(config: {
 	)
 	local function applyEvent(props: any, tags: { any })
 		for _, tag in tags do
-			props[(config.Roact.Event :: any)[tag]] = props["on"..tag]
-			props["on"..tag] = nil
+			props[(config.Roact.Event :: any)[tag]] = props["on" .. tag]
+			props["on" .. tag] = nil
 		end
 	end
+	-- stylua: ignore start
 	local function Camera(props: CameraProps, children)
 		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "FirstPersonTransition", "InterpolationFinished" })
 		return e("Camera", props, children)
@@ -345,6 +347,7 @@ function froact.configure<Hooks>(config: {
 		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying" })
 		return e("UIStroke", props, children)
 	end
+	-- stylua: ignore end
 	return {
 		Roact = config.Roact,
 		Hooks = config.Hooks,
@@ -393,4 +396,3 @@ function froact.configure<Hooks>(config: {
 end
 
 return froact
-

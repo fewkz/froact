@@ -446,7 +446,9 @@ if not INLINE_ENTIRE_TYPE:
             ),
         )
     )
-top_lines.append("-- stylua: ignore")
+if len(top_lines) > 0:
+    top_lines.insert(0, "-- stylua: ignore start")
+    top_lines.append("-- stylua: ignore end")
 
 body_lines = list()
 
@@ -460,9 +462,9 @@ body_lines.append(
 \tend\
 """
 )
-
+body_lines.append("\t-- stylua: ignore start")
 body_lines.extend(map(define_class, filtered_classes))
-
+body_lines.append("\t-- stylua: ignore end")
 exports = "\n".join(map(export_class, filtered_classes))
 
 content = (
