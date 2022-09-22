@@ -6,7 +6,7 @@ export type DefaultPropertyConfig = {
 	property: string,
 	value: any,
 }
-type ComponentConfig = { hooks: boolean?, pure: boolean? }
+type ComponentConfig = { pure: boolean? }
 
 local isAMemo = {}
 local function isA(class: string, ancestor: string)
@@ -87,16 +87,13 @@ local function newC<Hooks>(
 		body: (Props, Hooks) -> any
 	): (Props, Children) -> any
 		if defaultComponentConfig then
-			if config.hooks == nil then
-				config.hooks = defaultComponentConfig.hooks
-			end
 			if config.pure == nil then
 				config.pure = defaultComponentConfig.pure
 			end
 		end
 		local Component = hooks(
 			body,
-			if config.pure then pureHookOption else unpureHookOption
+			if config.pure == false then unpureHookOption else pureHookOption
 		)
 		return function(props, children)
 			return roact.createElement(Component, props, children)

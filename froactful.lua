@@ -6,7 +6,7 @@ export type DefaultPropertyConfig = {
 	property: string,
 	value: any,
 }
-type ComponentConfig = { hooks: boolean?, pure: boolean? }
+type ComponentConfig = { pure: boolean? }
 
 local isAMemo = {}
 local function isA(class: string, ancestor: string)
@@ -87,16 +87,13 @@ local function newC<Hooks>(
 		body: (Props, Hooks) -> any
 	): (Props, Children) -> any
 		if defaultComponentConfig then
-			if config.hooks == nil then
-				config.hooks = defaultComponentConfig.hooks
-			end
 			if config.pure == nil then
 				config.pure = defaultComponentConfig.pure
 			end
 		end
 		local Component = hooks(
 			body,
-			if config.pure then pureHookOption else unpureHookOption
+			if config.pure == false then unpureHookOption else pureHookOption
 		)
 		return function(props, children)
 			return roact.createElement(Component, props, children)
@@ -177,147 +174,147 @@ function froact.configure<Hooks>(config: {
 		end
 	end
 	local function Camera(props: CameraProps, children)
-		applyEvent(props, { "FirstPersonTransition", "DescendantRemoving", "ChildAdded", "ChildRemoved", "DescendantAdded", "Destroying", "InterpolationFinished", "AttributeChanged", "AncestryChanged", "Changed" })
+		applyEvent(props, { "ChildRemoved", "Changed", "AttributeChanged", "AncestryChanged", "InterpolationFinished", "DescendantRemoving", "DescendantAdded", "Destroying", "FirstPersonTransition", "ChildAdded" })
 		return e("Camera", props, children)
 	end
 	local function Frame(props: FrameProps, children)
-		applyEvent(props, { "SelectionGained", "MouseLeave", "Changed", "DescendantAdded", "Destroying", "SelectionChanged", "AttributeChanged", "TouchRotate", "SelectionLost", "ChildAdded", "MouseMoved", "MouseWheelForward", "TouchLongPress", "MouseEnter", "InputChanged", "TouchPan", "DescendantRemoving", "TouchSwipe", "TouchPinch", "ChildRemoved", "InputEnded", "TouchTap", "InputBegan", "AncestryChanged", "MouseWheelBackward" })
+		applyEvent(props, { "TouchPinch", "AttributeChanged", "InputChanged", "DescendantRemoving", "ChildAdded", "Changed", "AncestryChanged", "InputEnded", "MouseWheelForward", "SelectionChanged", "ChildRemoved", "TouchPan", "TouchSwipe", "MouseLeave", "TouchLongPress", "TouchRotate", "SelectionGained", "MouseMoved", "MouseWheelBackward", "InputBegan", "SelectionLost", "DescendantAdded", "Destroying", "TouchTap", "MouseEnter" })
 		return e("Frame", props, children)
 	end
 	local function ImageButton(props: ImageButtonProps, children)
-		applyEvent(props, { "SelectionGained", "MouseLeave", "Changed", "DescendantAdded", "Destroying", "SelectionChanged", "MouseButton2Up", "AttributeChanged", "TouchRotate", "MouseButton1Down", "SelectionLost", "MouseButton2Click", "MouseMoved", "ChildAdded", "MouseWheelForward", "TouchLongPress", "MouseButton1Click", "InputChanged", "MouseEnter", "TouchPan", "DescendantRemoving", "TouchSwipe", "TouchPinch", "ChildRemoved", "MouseButton2Down", "Activated", "MouseButton1Up", "InputEnded", "TouchTap", "InputBegan", "AncestryChanged", "MouseWheelBackward" })
+		applyEvent(props, { "TouchPinch", "AttributeChanged", "InputChanged", "MouseButton1Up", "DescendantRemoving", "ChildAdded", "MouseButton1Down", "Changed", "AncestryChanged", "MouseButton1Click", "InputEnded", "MouseWheelForward", "SelectionChanged", "MouseButton2Up", "ChildRemoved", "TouchPan", "TouchSwipe", "MouseButton2Click", "Activated", "TouchLongPress", "TouchRotate", "SelectionGained", "MouseMoved", "MouseButton2Down", "MouseWheelBackward", "InputBegan", "SelectionLost", "DescendantAdded", "Destroying", "MouseLeave", "TouchTap", "MouseEnter" })
 		return e("ImageButton", props, children)
 	end
 	local function TextButton(props: TextButtonProps, children)
-		applyEvent(props, { "SelectionGained", "MouseLeave", "Changed", "DescendantAdded", "Destroying", "SelectionChanged", "MouseButton2Up", "AttributeChanged", "TouchRotate", "MouseButton1Down", "SelectionLost", "MouseButton2Click", "MouseMoved", "ChildAdded", "MouseWheelForward", "TouchLongPress", "MouseButton1Click", "InputChanged", "MouseEnter", "TouchPan", "DescendantRemoving", "TouchSwipe", "TouchPinch", "ChildRemoved", "MouseButton2Down", "Activated", "MouseButton1Up", "InputEnded", "TouchTap", "InputBegan", "AncestryChanged", "MouseWheelBackward" })
+		applyEvent(props, { "TouchPinch", "AttributeChanged", "InputChanged", "MouseButton1Up", "DescendantRemoving", "ChildAdded", "MouseButton1Down", "Changed", "AncestryChanged", "MouseButton1Click", "InputEnded", "MouseWheelForward", "SelectionChanged", "MouseButton2Up", "ChildRemoved", "TouchPan", "TouchSwipe", "MouseButton2Click", "Activated", "TouchLongPress", "TouchRotate", "SelectionGained", "MouseMoved", "MouseButton2Down", "MouseWheelBackward", "InputBegan", "SelectionLost", "DescendantAdded", "Destroying", "MouseLeave", "TouchTap", "MouseEnter" })
 		return e("TextButton", props, children)
 	end
 	local function ImageLabel(props: ImageLabelProps, children)
-		applyEvent(props, { "SelectionGained", "MouseLeave", "Changed", "DescendantAdded", "Destroying", "SelectionChanged", "AttributeChanged", "TouchRotate", "SelectionLost", "ChildAdded", "MouseMoved", "MouseWheelForward", "TouchLongPress", "MouseEnter", "InputChanged", "TouchPan", "DescendantRemoving", "TouchSwipe", "TouchPinch", "ChildRemoved", "InputEnded", "TouchTap", "InputBegan", "AncestryChanged", "MouseWheelBackward" })
+		applyEvent(props, { "TouchPinch", "AttributeChanged", "InputChanged", "DescendantRemoving", "ChildAdded", "Changed", "AncestryChanged", "InputEnded", "MouseWheelForward", "SelectionChanged", "ChildRemoved", "TouchPan", "TouchSwipe", "MouseLeave", "TouchLongPress", "TouchRotate", "SelectionGained", "MouseMoved", "MouseWheelBackward", "InputBegan", "SelectionLost", "DescendantAdded", "Destroying", "TouchTap", "MouseEnter" })
 		return e("ImageLabel", props, children)
 	end
 	local function TextLabel(props: TextLabelProps, children)
-		applyEvent(props, { "SelectionGained", "MouseLeave", "Changed", "DescendantAdded", "Destroying", "SelectionChanged", "AttributeChanged", "TouchRotate", "SelectionLost", "ChildAdded", "MouseMoved", "MouseWheelForward", "TouchLongPress", "MouseEnter", "InputChanged", "TouchPan", "DescendantRemoving", "TouchSwipe", "TouchPinch", "ChildRemoved", "InputEnded", "TouchTap", "InputBegan", "AncestryChanged", "MouseWheelBackward" })
+		applyEvent(props, { "TouchPinch", "AttributeChanged", "InputChanged", "DescendantRemoving", "ChildAdded", "Changed", "AncestryChanged", "InputEnded", "MouseWheelForward", "SelectionChanged", "ChildRemoved", "TouchPan", "TouchSwipe", "MouseLeave", "TouchLongPress", "TouchRotate", "SelectionGained", "MouseMoved", "MouseWheelBackward", "InputBegan", "SelectionLost", "DescendantAdded", "Destroying", "TouchTap", "MouseEnter" })
 		return e("TextLabel", props, children)
 	end
 	local function ScrollingFrame(props: ScrollingFrameProps, children)
-		applyEvent(props, { "SelectionGained", "MouseLeave", "Changed", "DescendantAdded", "Destroying", "SelectionChanged", "AttributeChanged", "TouchRotate", "SelectionLost", "ChildAdded", "MouseMoved", "MouseWheelForward", "TouchLongPress", "MouseEnter", "InputChanged", "TouchPan", "DescendantRemoving", "TouchSwipe", "TouchPinch", "ChildRemoved", "InputEnded", "TouchTap", "InputBegan", "AncestryChanged", "MouseWheelBackward" })
+		applyEvent(props, { "TouchPinch", "AttributeChanged", "InputChanged", "DescendantRemoving", "ChildAdded", "Changed", "AncestryChanged", "InputEnded", "MouseWheelForward", "SelectionChanged", "ChildRemoved", "TouchPan", "TouchSwipe", "MouseLeave", "TouchLongPress", "TouchRotate", "SelectionGained", "MouseMoved", "MouseWheelBackward", "InputBegan", "SelectionLost", "DescendantAdded", "Destroying", "TouchTap", "MouseEnter" })
 		return e("ScrollingFrame", props, children)
 	end
 	local function TextBox(props: TextBoxProps, children)
-		applyEvent(props, { "SelectionGained", "MouseLeave", "Changed", "DescendantAdded", "Destroying", "SelectionChanged", "AttributeChanged", "TouchRotate", "SelectionLost", "ChildAdded", "MouseMoved", "MouseWheelForward", "ReturnPressedFromOnScreenKeyboard", "TouchLongPress", "FocusLost", "InputChanged", "Focused", "MouseEnter", "TouchPan", "DescendantRemoving", "TouchSwipe", "TouchPinch", "ChildRemoved", "InputEnded", "TouchTap", "InputBegan", "AncestryChanged", "MouseWheelBackward" })
+		applyEvent(props, { "TouchPinch", "AttributeChanged", "InputChanged", "DescendantRemoving", "ChildAdded", "Changed", "AncestryChanged", "InputEnded", "MouseWheelForward", "SelectionChanged", "ReturnPressedFromOnScreenKeyboard", "FocusLost", "ChildRemoved", "TouchPan", "TouchSwipe", "MouseLeave", "TouchLongPress", "TouchRotate", "SelectionGained", "MouseMoved", "MouseWheelBackward", "Focused", "InputBegan", "SelectionLost", "DescendantAdded", "Destroying", "TouchTap", "MouseEnter" })
 		return e("TextBox", props, children)
 	end
 	local function VideoFrame(props: VideoFrameProps, children)
-		applyEvent(props, { "SelectionGained", "MouseLeave", "Changed", "DescendantAdded", "Destroying", "SelectionChanged", "AttributeChanged", "TouchRotate", "SelectionLost", "DidLoop", "MouseMoved", "ChildAdded", "MouseWheelForward", "TouchLongPress", "InputChanged", "MouseEnter", "TouchPan", "DescendantRemoving", "TouchSwipe", "Paused", "TouchPinch", "Loaded", "ChildRemoved", "Ended", "Played", "InputEnded", "TouchTap", "InputBegan", "AncestryChanged", "MouseWheelBackward" })
+		applyEvent(props, { "TouchPinch", "AttributeChanged", "InputChanged", "Paused", "DescendantRemoving", "ChildAdded", "Changed", "AncestryChanged", "Ended", "Played", "InputEnded", "MouseWheelForward", "SelectionChanged", "ChildRemoved", "DidLoop", "TouchPan", "TouchSwipe", "TouchLongPress", "TouchRotate", "SelectionGained", "Loaded", "MouseMoved", "MouseWheelBackward", "InputBegan", "SelectionLost", "DescendantAdded", "Destroying", "MouseLeave", "TouchTap", "MouseEnter" })
 		return e("VideoFrame", props, children)
 	end
 	local function ViewportFrame(props: ViewportFrameProps, children)
-		applyEvent(props, { "SelectionGained", "MouseLeave", "Changed", "DescendantAdded", "Destroying", "SelectionChanged", "AttributeChanged", "TouchRotate", "SelectionLost", "ChildAdded", "MouseMoved", "MouseWheelForward", "TouchLongPress", "MouseEnter", "InputChanged", "TouchPan", "DescendantRemoving", "TouchSwipe", "TouchPinch", "ChildRemoved", "InputEnded", "TouchTap", "InputBegan", "AncestryChanged", "MouseWheelBackward" })
+		applyEvent(props, { "TouchPinch", "AttributeChanged", "InputChanged", "DescendantRemoving", "ChildAdded", "Changed", "AncestryChanged", "InputEnded", "MouseWheelForward", "SelectionChanged", "ChildRemoved", "TouchPan", "TouchSwipe", "MouseLeave", "TouchLongPress", "TouchRotate", "SelectionGained", "MouseMoved", "MouseWheelBackward", "InputBegan", "SelectionLost", "DescendantAdded", "Destroying", "TouchTap", "MouseEnter" })
 		return e("ViewportFrame", props, children)
 	end
 	local function BillboardGui(props: BillboardGuiProps, children)
-		applyEvent(props, { "DescendantRemoving", "ChildAdded", "ChildRemoved", "DescendantAdded", "Destroying", "SelectionChanged", "AttributeChanged", "AncestryChanged", "Changed" })
+		applyEvent(props, { "ChildRemoved", "Changed", "AttributeChanged", "AncestryChanged", "DescendantRemoving", "DescendantAdded", "SelectionChanged", "Destroying", "ChildAdded" })
 		return e("BillboardGui", props, children)
 	end
 	local function ScreenGui(props: ScreenGuiProps, children)
-		applyEvent(props, { "DescendantRemoving", "ChildAdded", "ChildRemoved", "DescendantAdded", "Destroying", "SelectionChanged", "AttributeChanged", "AncestryChanged", "Changed" })
+		applyEvent(props, { "ChildRemoved", "Changed", "AttributeChanged", "AncestryChanged", "DescendantRemoving", "DescendantAdded", "SelectionChanged", "Destroying", "ChildAdded" })
 		return e("ScreenGui", props, children)
 	end
 	local function SurfaceGui(props: SurfaceGuiProps, children)
-		applyEvent(props, { "DescendantRemoving", "ChildAdded", "ChildRemoved", "DescendantAdded", "Destroying", "SelectionChanged", "AttributeChanged", "AncestryChanged", "Changed" })
+		applyEvent(props, { "ChildRemoved", "Changed", "AttributeChanged", "AncestryChanged", "DescendantRemoving", "DescendantAdded", "SelectionChanged", "Destroying", "ChildAdded" })
 		return e("SurfaceGui", props, children)
 	end
 	local function CornerWedgePart(props: CornerWedgePartProps, children)
-		applyEvent(props, { "Touched", "DescendantRemoving", "ChildAdded", "ChildRemoved", "DescendantAdded", "Destroying", "AttributeChanged", "TouchEnded", "AncestryChanged", "Changed" })
+		applyEvent(props, { "Touched", "ChildRemoved", "AttributeChanged", "AncestryChanged", "Changed", "TouchEnded", "DescendantRemoving", "DescendantAdded", "Destroying", "ChildAdded" })
 		return e("CornerWedgePart", props, children)
 	end
 	local function Part(props: PartProps<Part>, children)
-		applyEvent(props, { "Touched", "DescendantRemoving", "ChildAdded", "ChildRemoved", "DescendantAdded", "Destroying", "AttributeChanged", "TouchEnded", "AncestryChanged", "Changed" })
+		applyEvent(props, { "Touched", "ChildRemoved", "AttributeChanged", "AncestryChanged", "Changed", "TouchEnded", "DescendantRemoving", "DescendantAdded", "Destroying", "ChildAdded" })
 		return e("Part", props, children)
 	end
 	local function Seat(props: SeatProps, children)
-		applyEvent(props, { "Touched", "DescendantRemoving", "ChildAdded", "ChildRemoved", "DescendantAdded", "Destroying", "AttributeChanged", "TouchEnded", "AncestryChanged", "Changed" })
+		applyEvent(props, { "Touched", "ChildRemoved", "AttributeChanged", "AncestryChanged", "Changed", "TouchEnded", "DescendantRemoving", "DescendantAdded", "Destroying", "ChildAdded" })
 		return e("Seat", props, children)
 	end
 	local function SpawnLocation(props: SpawnLocationProps, children)
-		applyEvent(props, { "Touched", "DescendantRemoving", "ChildAdded", "ChildRemoved", "DescendantAdded", "Destroying", "AttributeChanged", "TouchEnded", "AncestryChanged", "Changed" })
+		applyEvent(props, { "Touched", "ChildRemoved", "AttributeChanged", "AncestryChanged", "Changed", "TouchEnded", "DescendantRemoving", "DescendantAdded", "Destroying", "ChildAdded" })
 		return e("SpawnLocation", props, children)
 	end
 	local function WedgePart(props: WedgePartProps, children)
-		applyEvent(props, { "Touched", "DescendantRemoving", "ChildAdded", "ChildRemoved", "DescendantAdded", "Destroying", "AttributeChanged", "TouchEnded", "AncestryChanged", "Changed" })
+		applyEvent(props, { "Touched", "ChildRemoved", "AttributeChanged", "AncestryChanged", "Changed", "TouchEnded", "DescendantRemoving", "DescendantAdded", "Destroying", "ChildAdded" })
 		return e("WedgePart", props, children)
 	end
 	local function MeshPart(props: MeshPartProps, children)
-		applyEvent(props, { "Touched", "DescendantRemoving", "ChildAdded", "ChildRemoved", "DescendantAdded", "Destroying", "AttributeChanged", "TouchEnded", "AncestryChanged", "Changed" })
+		applyEvent(props, { "Touched", "ChildRemoved", "AttributeChanged", "AncestryChanged", "Changed", "TouchEnded", "DescendantRemoving", "DescendantAdded", "Destroying", "ChildAdded" })
 		return e("MeshPart", props, children)
 	end
 	local function PartOperation(props: PartOperationProps<PartOperation>, children)
-		applyEvent(props, { "Touched", "DescendantRemoving", "ChildAdded", "ChildRemoved", "DescendantAdded", "Destroying", "AttributeChanged", "TouchEnded", "AncestryChanged", "Changed" })
+		applyEvent(props, { "Touched", "ChildRemoved", "AttributeChanged", "AncestryChanged", "Changed", "TouchEnded", "DescendantRemoving", "DescendantAdded", "Destroying", "ChildAdded" })
 		return e("PartOperation", props, children)
 	end
 	local function NegateOperation(props: NegateOperationProps, children)
-		applyEvent(props, { "Touched", "DescendantRemoving", "ChildAdded", "ChildRemoved", "DescendantAdded", "Destroying", "AttributeChanged", "TouchEnded", "AncestryChanged", "Changed" })
+		applyEvent(props, { "Touched", "ChildRemoved", "AttributeChanged", "AncestryChanged", "Changed", "TouchEnded", "DescendantRemoving", "DescendantAdded", "Destroying", "ChildAdded" })
 		return e("NegateOperation", props, children)
 	end
 	local function UnionOperation(props: UnionOperationProps, children)
-		applyEvent(props, { "Touched", "DescendantRemoving", "ChildAdded", "ChildRemoved", "DescendantAdded", "Destroying", "AttributeChanged", "TouchEnded", "AncestryChanged", "Changed" })
+		applyEvent(props, { "Touched", "ChildRemoved", "AttributeChanged", "AncestryChanged", "Changed", "TouchEnded", "DescendantRemoving", "DescendantAdded", "Destroying", "ChildAdded" })
 		return e("UnionOperation", props, children)
 	end
 	local function TrussPart(props: TrussPartProps, children)
-		applyEvent(props, { "Touched", "DescendantRemoving", "ChildAdded", "ChildRemoved", "DescendantAdded", "Destroying", "AttributeChanged", "TouchEnded", "AncestryChanged", "Changed" })
+		applyEvent(props, { "Touched", "ChildRemoved", "AttributeChanged", "AncestryChanged", "Changed", "TouchEnded", "DescendantRemoving", "DescendantAdded", "Destroying", "ChildAdded" })
 		return e("TrussPart", props, children)
 	end
 	local function VehicleSeat(props: VehicleSeatProps, children)
-		applyEvent(props, { "Touched", "DescendantRemoving", "ChildAdded", "ChildRemoved", "DescendantAdded", "Destroying", "AttributeChanged", "TouchEnded", "AncestryChanged", "Changed" })
+		applyEvent(props, { "Touched", "ChildRemoved", "AttributeChanged", "AncestryChanged", "Changed", "TouchEnded", "DescendantRemoving", "DescendantAdded", "Destroying", "ChildAdded" })
 		return e("VehicleSeat", props, children)
 	end
 	local function UIAspectRatioConstraint(props: UIAspectRatioConstraintProps, children)
-		applyEvent(props, { "DescendantRemoving", "ChildAdded", "ChildRemoved", "DescendantAdded", "Destroying", "AttributeChanged", "AncestryChanged", "Changed" })
+		applyEvent(props, { "ChildRemoved", "Changed", "AttributeChanged", "AncestryChanged", "DescendantRemoving", "DescendantAdded", "Destroying", "ChildAdded" })
 		return e("UIAspectRatioConstraint", props, children)
 	end
 	local function UISizeConstraint(props: UISizeConstraintProps, children)
-		applyEvent(props, { "DescendantRemoving", "ChildAdded", "ChildRemoved", "DescendantAdded", "Destroying", "AttributeChanged", "AncestryChanged", "Changed" })
+		applyEvent(props, { "ChildRemoved", "Changed", "AttributeChanged", "AncestryChanged", "DescendantRemoving", "DescendantAdded", "Destroying", "ChildAdded" })
 		return e("UISizeConstraint", props, children)
 	end
 	local function UITextSizeConstraint(props: UITextSizeConstraintProps, children)
-		applyEvent(props, { "DescendantRemoving", "ChildAdded", "ChildRemoved", "DescendantAdded", "Destroying", "AttributeChanged", "AncestryChanged", "Changed" })
+		applyEvent(props, { "ChildRemoved", "Changed", "AttributeChanged", "AncestryChanged", "DescendantRemoving", "DescendantAdded", "Destroying", "ChildAdded" })
 		return e("UITextSizeConstraint", props, children)
 	end
 	local function UICorner(props: UICornerProps, children)
-		applyEvent(props, { "DescendantRemoving", "ChildAdded", "ChildRemoved", "DescendantAdded", "Destroying", "AttributeChanged", "AncestryChanged", "Changed" })
+		applyEvent(props, { "ChildRemoved", "Changed", "AttributeChanged", "AncestryChanged", "DescendantRemoving", "DescendantAdded", "Destroying", "ChildAdded" })
 		return e("UICorner", props, children)
 	end
 	local function UIGradient(props: UIGradientProps, children)
-		applyEvent(props, { "DescendantRemoving", "ChildAdded", "ChildRemoved", "DescendantAdded", "Destroying", "AttributeChanged", "AncestryChanged", "Changed" })
+		applyEvent(props, { "ChildRemoved", "Changed", "AttributeChanged", "AncestryChanged", "DescendantRemoving", "DescendantAdded", "Destroying", "ChildAdded" })
 		return e("UIGradient", props, children)
 	end
 	local function UIGridLayout(props: UIGridLayoutProps, children)
-		applyEvent(props, { "DescendantRemoving", "ChildAdded", "ChildRemoved", "DescendantAdded", "Destroying", "AttributeChanged", "AncestryChanged", "Changed" })
+		applyEvent(props, { "ChildRemoved", "Changed", "AttributeChanged", "AncestryChanged", "DescendantRemoving", "DescendantAdded", "Destroying", "ChildAdded" })
 		return e("UIGridLayout", props, children)
 	end
 	local function UIListLayout(props: UIListLayoutProps, children)
-		applyEvent(props, { "DescendantRemoving", "ChildAdded", "ChildRemoved", "DescendantAdded", "Destroying", "AttributeChanged", "AncestryChanged", "Changed" })
+		applyEvent(props, { "ChildRemoved", "Changed", "AttributeChanged", "AncestryChanged", "DescendantRemoving", "DescendantAdded", "Destroying", "ChildAdded" })
 		return e("UIListLayout", props, children)
 	end
 	local function UIPageLayout(props: UIPageLayoutProps, children)
-		applyEvent(props, { "DescendantRemoving", "ChildAdded", "ChildRemoved", "DescendantAdded", "Destroying", "PageEnter", "Stopped", "PageLeave", "AttributeChanged", "AncestryChanged", "Changed" })
+		applyEvent(props, { "ChildRemoved", "AttributeChanged", "AncestryChanged", "Changed", "PageEnter", "DescendantRemoving", "DescendantAdded", "ChildAdded", "PageLeave", "Destroying", "Stopped" })
 		return e("UIPageLayout", props, children)
 	end
 	local function UITableLayout(props: UITableLayoutProps, children)
-		applyEvent(props, { "DescendantRemoving", "ChildAdded", "ChildRemoved", "DescendantAdded", "Destroying", "AttributeChanged", "AncestryChanged", "Changed" })
+		applyEvent(props, { "ChildRemoved", "Changed", "AttributeChanged", "AncestryChanged", "DescendantRemoving", "DescendantAdded", "Destroying", "ChildAdded" })
 		return e("UITableLayout", props, children)
 	end
 	local function UIPadding(props: UIPaddingProps, children)
-		applyEvent(props, { "DescendantRemoving", "ChildAdded", "ChildRemoved", "DescendantAdded", "Destroying", "AttributeChanged", "AncestryChanged", "Changed" })
+		applyEvent(props, { "ChildRemoved", "Changed", "AttributeChanged", "AncestryChanged", "DescendantRemoving", "DescendantAdded", "Destroying", "ChildAdded" })
 		return e("UIPadding", props, children)
 	end
 	local function UIScale(props: UIScaleProps, children)
-		applyEvent(props, { "DescendantRemoving", "ChildAdded", "ChildRemoved", "DescendantAdded", "Destroying", "AttributeChanged", "AncestryChanged", "Changed" })
+		applyEvent(props, { "ChildRemoved", "Changed", "AttributeChanged", "AncestryChanged", "DescendantRemoving", "DescendantAdded", "Destroying", "ChildAdded" })
 		return e("UIScale", props, children)
 	end
 	local function UIStroke(props: UIStrokeProps, children)
-		applyEvent(props, { "DescendantRemoving", "ChildAdded", "ChildRemoved", "DescendantAdded", "Destroying", "AttributeChanged", "AncestryChanged", "Changed" })
+		applyEvent(props, { "ChildRemoved", "Changed", "AttributeChanged", "AncestryChanged", "DescendantRemoving", "DescendantAdded", "Destroying", "ChildAdded" })
 		return e("UIStroke", props, children)
 	end
 	return {
