@@ -37,14 +37,19 @@ local function newE(roact, hooks, defaults: { DefaultPropertyConfig })
 	end
 end
 
+-- stylua: ignore
+type ListConfig = (
+	{ orderByName: boolean?, setOrder: true, initial: number?, }
+	| { orderByName: boolean?, setOrder: false?, initial: nil }
+)
 local function newList(roact)
-	return function(
-		config: { setOrder: true, initial: number? } | { setOrder: false?, initial: nil },
-		elements: { [number]: Element }
-	)
+	return function(config: ListConfig, elements: { [number]: Element })
 		local index = if config.initial then config.initial else 0
 		local count: { [string]: number } = {}
 		local dict = {}
+		local nameFormat = "%0"
+			.. math.floor(math.log10(#elements) + 1)
+			.. "i | %s" -- For orderByName
 		for _, element in elements do
 			local isRobloxClass = typeof(element.component) == "string"
 			local className = if isRobloxClass
@@ -55,16 +60,25 @@ local function newList(roact)
 			else
 				count[className] += 1
 			end
-			local instanceName = className .. count[className]
+
+			local sortType = if not isRobloxClass
+				then "Component"
+				else if isRobloxClass
+						and isA(element.component, "GuiObject")
+					then "Instance"
+					else "None"
+
+			local instanceName = className .. " " .. count[className]
+			if config.orderByName and sortType ~= "None" then
+				index += 1
+				instanceName = string.format(nameFormat, index, instanceName)
+			end
 			dict[instanceName] = element
-			if
-				config.setOrder
-				and isRobloxClass
-				and isA(element.component, "GuiObject")
-			then
+
+			if config.setOrder and sortType == "Instance" then
 				index += 1
 				element.props.LayoutOrder = index
-			elseif config.setOrder and not isRobloxClass then
+			elseif config.setOrder and sortType == "Component" then
 				index += 1
 				element.props.layoutOrder = index
 			end
