@@ -20,7 +20,7 @@ You can also set default properties to be applied to all elements froact creates
 ## Features
 `froact.c` lets you create a functional component.
 ```lua
-local Timer = froact.c({ pure = true }, function(props, hooks)
+local Timer = froact.c({ pure = true, name = "Timer" }, function(props, hooks)
     local count, setCount = hooks.useState(0)
     hooks.useEffect(function()
         local thread = task.spawn(function()
@@ -64,7 +64,7 @@ local elements = froact.list({ setOrder = true }, {
     froact.UIListLayout({ SortOrder = Enum.SortOrder.LayoutOrder }), -- Gets named UIListLayout1
     froact.TextLabel({ Text = "This line is first" }), -- Gets named TextLabel1
     froact.TextLabel({ Text = "This line is second" }), -- Gets named TextLabel2
-    Timer({}) -- Gets named Component1
+    Timer({}) -- Gets named Timer1, since `name` was defined on it.
 })
 ```
 

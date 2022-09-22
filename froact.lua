@@ -6,7 +6,10 @@ export type DefaultPropertyConfig = {
 	property: string,
 	value: any,
 }
-type ComponentConfig = { pure: boolean? }
+type ComponentConfig = {
+	pure: boolean?,
+	name: string?,
+}
 
 local isAMemo = {}
 local function isA(class: string, ancestor: string)
@@ -46,7 +49,7 @@ local function newList(roact)
 			local isRobloxClass = typeof(element.component) == "string"
 			local className = if isRobloxClass
 				then element.component
-				else "Component"
+				else element.component.__componentName
 			if count[className] == nil then
 				count[className] = 1
 			else
@@ -70,8 +73,6 @@ local function newList(roact)
 	end
 end
 
-local pureHookOption, unpureHookOption = { componentType = "PureComponent" }, {}
-
 type HookFunction<Props, Hooks> = (
 	render: (Props, Hooks) -> any,
 	options: any
@@ -80,21 +81,23 @@ type HookFunction<Props, Hooks> = (
 local function newC<Hooks>(
 	roact,
 	hooks: HookFunction<any, Hooks>,
-	defaultComponentConfig: ComponentConfig?
+	unpureByDefault: boolean?
 )
 	return function<Props>(
 		config: ComponentConfig,
 		body: (Props, Hooks) -> any
 	): (Props, Children) -> any
-		if defaultComponentConfig then
+		if not unpureByDefault then
 			if config.pure == nil then
-				config.pure = defaultComponentConfig.pure
+				config.pure = true
 			end
 		end
-		local Component = hooks(
-			body,
-			if config.pure == false then unpureHookOption else pureHookOption
-		)
+		local Component = hooks(body, {
+			componentType = if config.pure
+				then "PureComponent"
+				else "Component",
+			name = if config.name then config.name else "Component",
+		})
 		return function(props, children)
 			return roact.createElement(Component, props, children)
 		end
@@ -106,7 +109,7 @@ function froact.configure<Hooks>(config: {
 	Roact: any,
 	Hooks: HookFunction<any, Hooks>,
 	defaultProperties: { DefaultPropertyConfig }?,
-	defaultComponentConfig: ComponentConfig?,
+	unpureByDefault: boolean?,
 })
 	local e = newE(
 		config.Roact,
@@ -118,7 +121,7 @@ function froact.configure<Hooks>(config: {
 		Roact = config.Roact,
 		Hooks = config.Hooks,
 		e = e,
-		c = newC(config.Roact, config.Hooks, config.defaultComponentConfig),
+		c = newC(config.Roact, config.Hooks, config.unpureByDefault),
 		list = newList(config.Roact),
 		-- FROACTFUL_FUNCTION_EXPORTS
 	}
