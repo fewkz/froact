@@ -41,30 +41,36 @@ local Timer = froact.c({ pure = true, name = "Timer" }, function(props, hooks)
 end)
 ```
 The first parameter configures the component.
-Currently it supports `pure` to make the component a `PureComponent`,
+It supports `pure` to make the component a `PureComponent`,
 which only re-renders if it's properties or state change.
+It also supports `name` which is the name of the Roact component.
+Froact also uses the name of the component when generating a name with `froact.list`.
 
 Froact is designed to be used by calling the component directly,
 rather than using `Roact.createElement`.
 Froact is designed to give you full luau type checking support this way.
 ```lua
-local ReverseLabel = froact.c({}, function(props: { text: string }, hooks)
+type ReverseLabelProps = { text: string, layoutOrder: number? }
+local ReverseLabel = froact.c({ name = "ReverseLabel" }, function(props: ReverseLabelProps, hooks)
     local reversed = string.reverse(props.text)
-    return froact.TextLabel({ Text = reversed })
+    return froact.TextLabel({ Text = reversed, LayoutOrder = props.layoutOrder })
 end)
 local element = ReverseLabel({
-    text = 5 -- Luau would warn against this
+    layoutOrder = "five" -- Luau would warn against this
+    -- Luau will warn that text was not specified
 })
 ```
 
 `froact.list` takes an array of elements and will generate names and set LayoutOrder.
-It returns a dictionary intended to be used in the children parameter of a component.
+It returns a Roact fragment.
+For components, it will assign `layoutOrder` to props.
 ```lua
-local elements = froact.list({ setOrder = true }, {
+local fragment = froact.list({ setOrder = true }, {
     froact.UIListLayout({ SortOrder = Enum.SortOrder.LayoutOrder }), -- Gets named UIListLayout1
     froact.TextLabel({ Text = "This line is first" }), -- Gets named TextLabel1
     froact.TextLabel({ Text = "This line is second" }), -- Gets named TextLabel2
     Timer({}) -- Gets named Timer1, since `name` was defined on it.
+    ReverseLabel({ text = "This line is last" }) -- Gets named ReverseLabel1, and has `layoutOrder` set.
 })
 ```
 
