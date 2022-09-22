@@ -24,9 +24,9 @@ EXCLUDE = [
 # Whether froactful tries to simplify types by unioning super class types.
 # luau doesn't properly infer parameters to signals when they're not completely inlined.
 INLINE_INHERITED_PROPERTIES = False
-INLINE_INHERITED_SIGNALS = False
+INLINE_INHERITED_CALLBACKS = False
 INLINE_ENTIRE_TYPE = False
-INLINE_SIGNALS = False
+INLINE_CALLBACKS = False
 
 # Type defintions taken from https://github.com/JohnnyMorganz/luau-lsp/blob/main/scripts/dumpRobloxTypes.py
 CorrectionsValueType = TypedDict(
@@ -152,7 +152,7 @@ with open("froact.lua") as fio:
     content = fio.read()
 
 
-def fix_property_definition(type_def: str):
+def property_type_definition(type_def: str):
     if type_def == "Content":
         return "string"
     elif type_def.startswith("Enum"):
@@ -164,21 +164,37 @@ def fix_property_definition(type_def: str):
 
 
 # self_type is either class name or Rbx
-def fix_signal_defintion(type_def: str, self_type: str):
+def signal_type_defintion(type_def: str, self_type: str):
     if match := (
         re.match(r"RBXScriptSignal\<\((.*)\)\>", type_def)
         or re.match(r"RBXScriptSignal\<(.*)\>", type_def)
     ):
         args = tuple(
-            fix_property_definition(x) for x in filter(None, match.group(1).split(", "))
+            property_type_definition(x)
+            for x in filter(None, match.group(1).split(", "))
         )
         args_def = ", ".join((self_type,) + args)
-        if INLINE_SIGNALS:
+        if INLINE_CALLBACKS:
             return f"(rbx: {args_def}) -> ()?"
         else:
             return f"Event<{args_def}>?"
     else:
         raise Exception("Couldn't match signal definition " + type_def)
+
+
+def bind_prop_type_definition(self_type: str):
+    if INLINE_CALLBACKS:
+        return f"(rbx: {self_type}) -> ()?"
+    else:
+        return f"BindProperty<{self_type}>?"
+
+
+def is_bindable(property_name: str, klass: str):
+    return (
+        property_name.startswith("Absolute")
+        or property_name == "TextBounds"
+        or (klass == "TextBox" and property_name == "Text")
+    )
 
 
 ignored_types = ["ProtectedString", "Hole"]
@@ -224,9 +240,18 @@ def get_class_property_fields(klass: str):
     fields = get_parsed_class_fields(klass)
     property_fields = {f for f in fields if not f[1].startswith("RBXScriptSignal")}
     return tuple(
-        (name, make_optional(fix_property_definition(type_def)))
+        (name, make_optional(property_type_definition(type_def)))
         for (name, type_def) in property_fields
-        if type_def not in ignored_types and filter_class_field(klass, name)
+        if type_def not in ignored_types
+    )
+
+
+@cache
+def get_filtered_class_property_fields(klass: str):
+    return tuple(
+        (name, type_def)
+        for (name, type_def) in get_class_property_fields(klass)
+        if filter_class_field(klass, name)
     )
 
 
@@ -235,14 +260,26 @@ def get_class_signal_fields(klass: str, self_type):
     fields = get_parsed_class_fields(klass)
     signal_fields = {f for f in fields if f[1].startswith("RBXScriptSignal")}
     return tuple(
-        ("on" + name, fix_signal_defintion(type_def, self_type))
+        ("on" + name, signal_type_defintion(type_def, self_type))
         for (name, type_def) in signal_fields
     )
 
 
 @cache
+def get_class_bind_fields(klass: str, self_type: str):
+    property_fields = get_class_property_fields(klass)
+    return tuple(
+        ("bind" + name, bind_prop_type_definition(self_type))
+        for (name, _) in property_fields
+        if is_bindable(name, klass)
+    )
+
+
+@cache
 def get_class_fields(klass: str, self_type: str):
-    return get_class_property_fields(klass) + get_class_signal_fields(klass, self_type)
+    return get_filtered_class_property_fields(klass) + get_class_signal_fields(
+        klass, self_type
+    )
 
 
 def parse_security(security):
@@ -273,28 +310,37 @@ def filter_class_field(klass_name, field_name):
 @cache
 def get_parsed_class_fields_recursive(klass_name: str):
     super_class, _ = lookup_class_def(klass_name)
-    class_fields = get_parsed_class_fields(klass_name)
+    fields = get_parsed_class_fields(klass_name)
     if super_class:
-        class_fields += get_parsed_class_fields_recursive(super_class)
-    return class_fields
+        fields += get_parsed_class_fields_recursive(super_class)
+    return fields
 
 
 @cache
 def get_class_property_fields_recursive(klass_name: str):
     super_class, _ = lookup_class_def(klass_name)
-    class_fields = get_class_property_fields(klass_name)
+    fields = get_filtered_class_property_fields(klass_name)
     if super_class:
-        class_fields += get_class_property_fields_recursive(super_class)
-    return class_fields
+        fields += get_class_property_fields_recursive(super_class)
+    return fields
 
 
 @cache
 def get_class_signal_fields_recursive(klass_name: str, self_type: str):
     super_class, _ = lookup_class_def(klass_name)
-    class_fields = get_class_signal_fields(klass_name, self_type)
+    fields = get_class_signal_fields(klass_name, self_type)
     if super_class:
-        class_fields += get_class_signal_fields_recursive(super_class, self_type)
-    return class_fields
+        fields += get_class_signal_fields_recursive(super_class, self_type)
+    return fields
+
+
+@cache
+def get_class_bind_fields_recursive(klass_name: str, self_type: str):
+    super_class, _ = lookup_class_def(klass_name)
+    fields = get_class_bind_fields(klass_name, self_type)
+    if super_class:
+        fields += get_class_bind_fields_recursive(super_class, self_type)
+    return fields
 
 
 @cache
@@ -307,34 +353,24 @@ def has_ancestor(klass, ancestor):
         return False
 
 
-@cache
-def define_class_signals(klass: str):
-    fields = get_parsed_class_fields_recursive(klass)
-    signal_fields = sorted(f for f in fields if f[1].startswith("RBXScriptSignal"))
-    signal_names = ", ".join('"' + f + '"' for (f, _) in signal_fields)
-    return f"\n\t\tapplyEvent(props, {{ {signal_names} }})"
-    # return tuple(
-    #     f"\n\t\t(props :: any)[(config.Roact.Event :: any).{f}] = props.on{f};"
-    #     for (f, _) in signal_fields
-    # )
-
-
 def class_props_type(klass_name):
     class_fields = list()
     if INLINE_INHERITED_PROPERTIES:
         class_fields.extend(get_class_property_fields_recursive(klass_name))
     else:
-        class_fields.extend(get_class_property_fields(klass_name))
-    if INLINE_INHERITED_SIGNALS:
+        class_fields.extend(get_filtered_class_property_fields(klass_name))
+    if INLINE_INHERITED_CALLBACKS:
         class_fields.extend(get_class_signal_fields_recursive(klass_name, klass_name))
+        class_fields.extend(get_class_bind_fields_recursive(klass_name, klass_name))
     else:
         class_fields.extend(get_class_signal_fields(klass_name, klass_name))
+        class_fields.extend(get_class_bind_fields(klass_name, klass_name))
     class_fields = sorted(class_fields)
     property_definitions = ", ".join(": ".join(f) for f in class_fields)
     props_type_def = "{ " + property_definitions + " }"
-    if not INLINE_INHERITED_PROPERTIES or not INLINE_INHERITED_SIGNALS:
+    if not INLINE_INHERITED_PROPERTIES or not INLINE_INHERITED_CALLBACKS:
         super_class, _ = lookup_class_def(klass_name)
-        if INLINE_INHERITED_SIGNALS:
+        if INLINE_INHERITED_CALLBACKS:
             super_class_type = f"{super_class}Props"
         else:
             super_class_type = f"{super_class}Props<{klass_name}>"
@@ -352,10 +388,9 @@ def define_class(klass: ApiClass):
         else:
             props_type_def = f"{klass_name}Props"
 
-    signal_definitions = define_class_signals(klass_name)
-
     return f"""\
-\tlocal function {klass_name}(props: {props_type_def}, children){signal_definitions}
+\tlocal function {klass_name}(props: {props_type_def}, children)
+\t\tapply(props)
 \t\treturn e("{klass_name}", props, children)
 \tend\
 """
@@ -371,13 +406,14 @@ def export_class(klass: ApiClass):
 def define_base_type(name):
     class_fields = list()
     if not INLINE_INHERITED_PROPERTIES:
-        class_fields.extend(get_class_property_fields(name))
-    if not INLINE_INHERITED_SIGNALS:
+        class_fields.extend(get_filtered_class_property_fields(name))
+    if not INLINE_INHERITED_CALLBACKS:
         class_fields.extend(get_class_signal_fields(name, "Rbx"))
+        class_fields.extend(get_class_bind_fields(name, "Rbx"))
     class_fields = sorted(class_fields)
     super_class, _ = lookup_class_def(name)
     property_definitions = ", ".join(": ".join(f) for f in class_fields)
-    props_suffix = "Props<Rbx>" if not INLINE_INHERITED_SIGNALS else "Props"
+    props_suffix = "Props<Rbx>" if not INLINE_INHERITED_CALLBACKS else "Props"
     if super_class is None:
         return f"type {name}{props_suffix} = {{ {property_definitions} }}"
     elif class_fields:
@@ -431,9 +467,10 @@ for klass in filtered_classes:
     count_references(klass["Name"])
 
 top_lines: list[str] = list()
-if not INLINE_SIGNALS:
+if not INLINE_CALLBACKS:
     top_lines.append("type Event<Rbx, A...> = (rbx: Rbx, A...) -> ()")
-if not INLINE_INHERITED_PROPERTIES or not INLINE_INHERITED_SIGNALS:
+    top_lines.append("type BindProperty<Rbx> = (rbx: Rbx) -> ()")
+if not INLINE_INHERITED_PROPERTIES or not INLINE_INHERITED_CALLBACKS:
     top_lines.extend(map(define_base_type, reference_count.keys()))
 if not INLINE_ENTIRE_TYPE:
     top_lines.extend(
@@ -454,10 +491,21 @@ body_lines = list()
 
 body_lines.append(
     """\
-\tlocal function applyEvent(props: any, tags: { any })
-\t\tfor _, tag in tags do
-\t\t\tprops[(config.Roact.Event :: any)[tag]] = props["on"..tag]
-\t\t\tprops["on"..tag] = nil
+\tlocal function apply(props: any)
+\t\tfor name, value in props do
+\t\t\tif typeof(name) == "string" then
+\t\t\t\tif name:sub(1, 2) == "on" then
+\t\t\t\t\tprops[(config.Roact.Event :: any)[name:sub(3)]] = value
+\t\t\t\t\tprops[name] = nil
+\t\t\t\telseif name:sub(1, 4) == "bind" then
+\t\t\t\t\tprops[(config.Roact.Change :: any)[name:sub(5)]] = value
+\t\t\t\t\tprops[name] = nil
+\t\t\t\tend
+\t\t\tend
+\t\tend
+\t\tif props.ref then
+\t\t\tprops[config.Roact.Ref] = props.ref
+\t\t\tprops.ref = nil
 \t\tend
 \tend\
 """

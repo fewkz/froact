@@ -128,9 +128,10 @@ end
 
 -- stylua: ignore start
 type Event<Rbx, A...> = (rbx: Rbx, A...) -> ()
+type BindProperty<Rbx> = (rbx: Rbx) -> ()
 type InstanceProps<Rbx> = { Archivable: boolean?, Name: string?, Parent: Instance?, onAncestryChanged: Event<Rbx, Instance, Instance>?, onAttributeChanged: Event<Rbx, string>?, onChanged: Event<Rbx, string>?, onChildAdded: Event<Rbx, Instance>?, onChildRemoved: Event<Rbx, Instance>?, onDescendantAdded: Event<Rbx, Instance>?, onDescendantRemoving: Event<Rbx, Instance>?, onDestroying: Event<Rbx>? }
 type GuiObjectProps<Rbx> = GuiBase2dProps<Rbx> & { Active: boolean?, AnchorPoint: Vector2?, AutomaticSize: Enum.AutomaticSize?, BackgroundColor3: Color3?, BackgroundTransparency: number?, BorderColor3: Color3?, BorderMode: Enum.BorderMode?, BorderSizePixel: number?, ClipsDescendants: boolean?, LayoutOrder: number?, NextSelectionDown: GuiObject?, NextSelectionLeft: GuiObject?, NextSelectionRight: GuiObject?, NextSelectionUp: GuiObject?, Position: UDim2?, Rotation: number?, Selectable: boolean?, SelectionImageObject: GuiObject?, SelectionOrder: number?, Size: UDim2?, SizeConstraint: Enum.SizeConstraint?, Transparency: number?, Visible: boolean?, ZIndex: number?, onInputBegan: Event<Rbx, InputObject>?, onInputChanged: Event<Rbx, InputObject>?, onInputEnded: Event<Rbx, InputObject>?, onMouseEnter: Event<Rbx, number, number>?, onMouseLeave: Event<Rbx, number, number>?, onMouseMoved: Event<Rbx, number, number>?, onMouseWheelBackward: Event<Rbx, number, number>?, onMouseWheelForward: Event<Rbx, number, number>?, onSelectionGained: Event<Rbx>?, onSelectionLost: Event<Rbx>?, onTouchLongPress: Event<Rbx, { any }, Enum.UserInputState>?, onTouchPan: Event<Rbx, { any }, Vector2, Vector2, Enum.UserInputState>?, onTouchPinch: Event<Rbx, { any }, number, number, Enum.UserInputState>?, onTouchRotate: Event<Rbx, { any }, number, number, Enum.UserInputState>?, onTouchSwipe: Event<Rbx, Enum.SwipeDirection, number>?, onTouchTap: Event<Rbx, { any }>? }
-type GuiBase2dProps<Rbx> = GuiBaseProps<Rbx> & { AutoLocalize: boolean?, RootLocalizationTable: LocalizationTable?, SelectionBehaviorDown: Enum.SelectionBehavior?, SelectionBehaviorLeft: Enum.SelectionBehavior?, SelectionBehaviorRight: Enum.SelectionBehavior?, SelectionBehaviorUp: Enum.SelectionBehavior?, SelectionGroup: boolean?, onSelectionChanged: Event<Rbx, boolean, GuiObject, GuiObject>? }
+type GuiBase2dProps<Rbx> = GuiBaseProps<Rbx> & { AutoLocalize: boolean?, RootLocalizationTable: LocalizationTable?, SelectionBehaviorDown: Enum.SelectionBehavior?, SelectionBehaviorLeft: Enum.SelectionBehavior?, SelectionBehaviorRight: Enum.SelectionBehavior?, SelectionBehaviorUp: Enum.SelectionBehavior?, SelectionGroup: boolean?, bindAbsolutePosition: BindProperty<Rbx>?, bindAbsoluteRotation: BindProperty<Rbx>?, bindAbsoluteSize: BindProperty<Rbx>?, onSelectionChanged: Event<Rbx, boolean, GuiObject, GuiObject>? }
 type GuiBaseProps<Rbx> = InstanceProps<Rbx>
 type GuiButtonProps<Rbx> = GuiObjectProps<Rbx> & { AutoButtonColor: boolean?, Modal: boolean?, Selected: boolean?, Style: Enum.ButtonStyle?, onActivated: Event<Rbx, InputObject, number>?, onMouseButton1Click: Event<Rbx>?, onMouseButton1Down: Event<Rbx, number, number>?, onMouseButton1Up: Event<Rbx, number, number>?, onMouseButton2Click: Event<Rbx>?, onMouseButton2Down: Event<Rbx, number, number>?, onMouseButton2Up: Event<Rbx, number, number>? }
 type GuiLabelProps<Rbx> = GuiObjectProps<Rbx>
@@ -145,17 +146,17 @@ type PartOperationProps<Rbx> = TriangleMeshPartProps<Rbx> & { UsePartColor: bool
 type UIConstraintProps<Rbx> = UIComponentProps<Rbx>
 type UIComponentProps<Rbx> = UIBaseProps<Rbx>
 type UIBaseProps<Rbx> = InstanceProps<Rbx>
-type UIGridStyleLayoutProps<Rbx> = UILayoutProps<Rbx> & { FillDirection: Enum.FillDirection?, HorizontalAlignment: Enum.HorizontalAlignment?, SortOrder: Enum.SortOrder?, VerticalAlignment: Enum.VerticalAlignment? }
+type UIGridStyleLayoutProps<Rbx> = UILayoutProps<Rbx> & { FillDirection: Enum.FillDirection?, HorizontalAlignment: Enum.HorizontalAlignment?, SortOrder: Enum.SortOrder?, VerticalAlignment: Enum.VerticalAlignment?, bindAbsoluteContentSize: BindProperty<Rbx>? }
 type UILayoutProps<Rbx> = UIComponentProps<Rbx>
 type CameraProps = InstanceProps<Camera> & { CFrame: CFrame?, CameraSubject: Instance?, CameraType: Enum.CameraType?, DiagonalFieldOfView: number?, FieldOfView: number?, FieldOfViewMode: Enum.FieldOfViewMode?, Focus: CFrame?, HeadLocked: boolean?, HeadScale: number?, MaxAxisFieldOfView: number?, onFirstPersonTransition: Event<Camera, boolean>?, onInterpolationFinished: Event<Camera>? }
 type CanvasGroupProps = GuiObjectProps<CanvasGroup> & { GroupColor3: Color3?, GroupTransparency: number? }
 type FrameProps = GuiObjectProps<Frame> & { Style: Enum.FrameStyle? }
 type ImageButtonProps = GuiButtonProps<ImageButton> & { HoverImage: string?, Image: string?, ImageColor3: Color3?, ImageRectOffset: Vector2?, ImageRectSize: Vector2?, ImageTransparency: number?, PressedImage: string?, ResampleMode: Enum.ResamplerMode?, ScaleType: Enum.ScaleType?, SliceCenter: Rect?, SliceScale: number?, TileSize: UDim2? }
-type TextButtonProps = GuiButtonProps<TextButton> & { Font: Enum.Font?, FontFace: Font?, LineHeight: number?, MaxVisibleGraphemes: number?, RichText: boolean?, Text: string?, TextColor3: Color3?, TextScaled: boolean?, TextSize: number?, TextStrokeColor3: Color3?, TextStrokeTransparency: number?, TextTransparency: number?, TextTruncate: Enum.TextTruncate?, TextWrapped: boolean?, TextXAlignment: Enum.TextXAlignment?, TextYAlignment: Enum.TextYAlignment? }
+type TextButtonProps = GuiButtonProps<TextButton> & { Font: Enum.Font?, FontFace: Font?, LineHeight: number?, MaxVisibleGraphemes: number?, RichText: boolean?, Text: string?, TextColor3: Color3?, TextScaled: boolean?, TextSize: number?, TextStrokeColor3: Color3?, TextStrokeTransparency: number?, TextTransparency: number?, TextTruncate: Enum.TextTruncate?, TextWrapped: boolean?, TextXAlignment: Enum.TextXAlignment?, TextYAlignment: Enum.TextYAlignment?, bindTextBounds: BindProperty<TextButton>? }
 type ImageLabelProps = GuiLabelProps<ImageLabel> & { Image: string?, ImageColor3: Color3?, ImageRectOffset: Vector2?, ImageRectSize: Vector2?, ImageTransparency: number?, ResampleMode: Enum.ResamplerMode?, ScaleType: Enum.ScaleType?, SliceCenter: Rect?, SliceScale: number?, TileSize: UDim2? }
-type TextLabelProps = GuiLabelProps<TextLabel> & { Font: Enum.Font?, FontFace: Font?, LineHeight: number?, MaxVisibleGraphemes: number?, RichText: boolean?, Text: string?, TextColor3: Color3?, TextScaled: boolean?, TextSize: number?, TextStrokeColor3: Color3?, TextStrokeTransparency: number?, TextTransparency: number?, TextTruncate: Enum.TextTruncate?, TextWrapped: boolean?, TextXAlignment: Enum.TextXAlignment?, TextYAlignment: Enum.TextYAlignment? }
-type ScrollingFrameProps = GuiObjectProps<ScrollingFrame> & { AutomaticCanvasSize: Enum.AutomaticSize?, BottomImage: string?, CanvasPosition: Vector2?, CanvasSize: UDim2?, ElasticBehavior: Enum.ElasticBehavior?, HorizontalScrollBarInset: Enum.ScrollBarInset?, MidImage: string?, ScrollBarImageColor3: Color3?, ScrollBarImageTransparency: number?, ScrollBarThickness: number?, ScrollingDirection: Enum.ScrollingDirection?, ScrollingEnabled: boolean?, TopImage: string?, VerticalScrollBarInset: Enum.ScrollBarInset?, VerticalScrollBarPosition: Enum.VerticalScrollBarPosition? }
-type TextBoxProps = GuiObjectProps<TextBox> & { ClearTextOnFocus: boolean?, CursorPosition: number?, Font: Enum.Font?, FontFace: Font?, LineHeight: number?, MaxVisibleGraphemes: number?, MultiLine: boolean?, PlaceholderColor3: Color3?, PlaceholderText: string?, RichText: boolean?, SelectionStart: number?, ShowNativeInput: boolean?, Text: string?, TextColor3: Color3?, TextEditable: boolean?, TextScaled: boolean?, TextSize: number?, TextStrokeColor3: Color3?, TextStrokeTransparency: number?, TextTransparency: number?, TextTruncate: Enum.TextTruncate?, TextWrapped: boolean?, TextXAlignment: Enum.TextXAlignment?, TextYAlignment: Enum.TextYAlignment?, onFocusLost: Event<TextBox, boolean, InputObject>?, onFocused: Event<TextBox>?, onReturnPressedFromOnScreenKeyboard: Event<TextBox>? }
+type TextLabelProps = GuiLabelProps<TextLabel> & { Font: Enum.Font?, FontFace: Font?, LineHeight: number?, MaxVisibleGraphemes: number?, RichText: boolean?, Text: string?, TextColor3: Color3?, TextScaled: boolean?, TextSize: number?, TextStrokeColor3: Color3?, TextStrokeTransparency: number?, TextTransparency: number?, TextTruncate: Enum.TextTruncate?, TextWrapped: boolean?, TextXAlignment: Enum.TextXAlignment?, TextYAlignment: Enum.TextYAlignment?, bindTextBounds: BindProperty<TextLabel>? }
+type ScrollingFrameProps = GuiObjectProps<ScrollingFrame> & { AutomaticCanvasSize: Enum.AutomaticSize?, BottomImage: string?, CanvasPosition: Vector2?, CanvasSize: UDim2?, ElasticBehavior: Enum.ElasticBehavior?, HorizontalScrollBarInset: Enum.ScrollBarInset?, MidImage: string?, ScrollBarImageColor3: Color3?, ScrollBarImageTransparency: number?, ScrollBarThickness: number?, ScrollingDirection: Enum.ScrollingDirection?, ScrollingEnabled: boolean?, TopImage: string?, VerticalScrollBarInset: Enum.ScrollBarInset?, VerticalScrollBarPosition: Enum.VerticalScrollBarPosition?, bindAbsoluteCanvasSize: BindProperty<ScrollingFrame>?, bindAbsoluteWindowSize: BindProperty<ScrollingFrame>? }
+type TextBoxProps = GuiObjectProps<TextBox> & { ClearTextOnFocus: boolean?, CursorPosition: number?, Font: Enum.Font?, FontFace: Font?, LineHeight: number?, MaxVisibleGraphemes: number?, MultiLine: boolean?, PlaceholderColor3: Color3?, PlaceholderText: string?, RichText: boolean?, SelectionStart: number?, ShowNativeInput: boolean?, Text: string?, TextColor3: Color3?, TextEditable: boolean?, TextScaled: boolean?, TextSize: number?, TextStrokeColor3: Color3?, TextStrokeTransparency: number?, TextTransparency: number?, TextTruncate: Enum.TextTruncate?, TextWrapped: boolean?, TextXAlignment: Enum.TextXAlignment?, TextYAlignment: Enum.TextYAlignment?, bindText: BindProperty<TextBox>?, bindTextBounds: BindProperty<TextBox>?, onFocusLost: Event<TextBox, boolean, InputObject>?, onFocused: Event<TextBox>?, onReturnPressedFromOnScreenKeyboard: Event<TextBox>? }
 type VideoFrameProps = GuiObjectProps<VideoFrame> & { Looped: boolean?, Playing: boolean?, TimePosition: number?, Video: string?, Volume: number?, onDidLoop: Event<VideoFrame, string>?, onEnded: Event<VideoFrame, string>?, onLoaded: Event<VideoFrame, string>?, onPaused: Event<VideoFrame, string>?, onPlayed: Event<VideoFrame, string>? }
 type ViewportFrameProps = GuiObjectProps<ViewportFrame> & { Ambient: Color3?, CurrentCamera: Camera?, ImageColor3: Color3?, ImageTransparency: number?, LightColor: Color3?, LightDirection: Vector3? }
 type BillboardGuiProps = LayerCollectorProps<BillboardGui> & { Active: boolean?, Adornee: Instance?, AlwaysOnTop: boolean?, Brightness: number?, ClipsDescendants: boolean?, DistanceLowerLimit: number?, DistanceStep: number?, DistanceUpperLimit: number?, ExtentsOffset: Vector3?, ExtentsOffsetWorldSpace: Vector3?, LightInfluence: number?, MaxDistance: number?, PlayerToHideFrom: Instance?, Size: UDim2?, SizeOffset: Vector2?, StudsOffset: Vector3?, StudsOffsetWorldSpace: Vector3? }
@@ -176,7 +177,7 @@ type UISizeConstraintProps = UIConstraintProps<UISizeConstraint> & { MaxSize: Ve
 type UITextSizeConstraintProps = UIConstraintProps<UITextSizeConstraint> & { MaxTextSize: number?, MinTextSize: number? }
 type UICornerProps = UIComponentProps<UICorner> & { CornerRadius: UDim? }
 type UIGradientProps = UIComponentProps<UIGradient> & { Color: ColorSequence?, Enabled: boolean?, Offset: Vector2?, Rotation: number?, Transparency: NumberSequence? }
-type UIGridLayoutProps = UIGridStyleLayoutProps<UIGridLayout> & { CellPadding: UDim2?, CellSize: UDim2?, FillDirectionMaxCells: number?, StartCorner: Enum.StartCorner? }
+type UIGridLayoutProps = UIGridStyleLayoutProps<UIGridLayout> & { CellPadding: UDim2?, CellSize: UDim2?, FillDirectionMaxCells: number?, StartCorner: Enum.StartCorner?, bindAbsoluteCellCount: BindProperty<UIGridLayout>?, bindAbsoluteCellSize: BindProperty<UIGridLayout>? }
 type UIListLayoutProps = UIGridStyleLayoutProps<UIListLayout> & { Padding: UDim? }
 type UIPageLayoutProps = UIGridStyleLayoutProps<UIPageLayout> & { Animated: boolean?, Circular: boolean?, EasingDirection: Enum.EasingDirection?, EasingStyle: Enum.EasingStyle?, GamepadInputEnabled: boolean?, Padding: UDim?, ScrollWheelInputEnabled: boolean?, TouchInputEnabled: boolean?, TweenTime: number?, onPageEnter: Event<UIPageLayout, Instance>?, onPageLeave: Event<UIPageLayout, Instance>?, onStopped: Event<UIPageLayout, Instance>? }
 type UITableLayoutProps = UIGridStyleLayoutProps<UITableLayout> & { FillEmptySpaceColumns: boolean?, FillEmptySpaceRows: boolean?, MajorAxis: Enum.TableMajorAxis?, Padding: UDim2? }
@@ -195,163 +196,174 @@ function froact.configure<Hooks>(config: {
 		config.Hooks,
 		if config.defaultProperties then config.defaultProperties else {}
 	)
-	local function applyEvent(props: any, tags: { any })
-		for _, tag in tags do
-			props[(config.Roact.Event :: any)[tag]] = props["on"..tag]
-			props["on"..tag] = nil
+	local function apply(props: any)
+		for name, value in props do
+			if typeof(name) == "string" then
+				if name:sub(1, 2) == "on" then
+					props[(config.Roact.Event :: any)[name:sub(3)]] = value
+					props[name] = nil
+				elseif name:sub(1, 4) == "bind" then
+					props[(config.Roact.Change :: any)[name:sub(5)]] = value
+					props[name] = nil
+				end
+			end
+		end
+		if props.ref then
+			props[config.Roact.Ref] = props.ref
+			props.ref = nil
 		end
 	end
 	-- stylua: ignore start
 	local function Camera(props: CameraProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "FirstPersonTransition", "InterpolationFinished" })
+		apply(props)
 		return e("Camera", props, children)
 	end
 	local function CanvasGroup(props: CanvasGroupProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "InputBegan", "InputChanged", "InputEnded", "MouseEnter", "MouseLeave", "MouseMoved", "MouseWheelBackward", "MouseWheelForward", "SelectionChanged", "SelectionGained", "SelectionLost", "TouchLongPress", "TouchPan", "TouchPinch", "TouchRotate", "TouchSwipe", "TouchTap" })
+		apply(props)
 		return e("CanvasGroup", props, children)
 	end
 	local function Frame(props: FrameProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "InputBegan", "InputChanged", "InputEnded", "MouseEnter", "MouseLeave", "MouseMoved", "MouseWheelBackward", "MouseWheelForward", "SelectionChanged", "SelectionGained", "SelectionLost", "TouchLongPress", "TouchPan", "TouchPinch", "TouchRotate", "TouchSwipe", "TouchTap" })
+		apply(props)
 		return e("Frame", props, children)
 	end
 	local function ImageButton(props: ImageButtonProps, children)
-		applyEvent(props, { "Activated", "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "InputBegan", "InputChanged", "InputEnded", "MouseButton1Click", "MouseButton1Down", "MouseButton1Up", "MouseButton2Click", "MouseButton2Down", "MouseButton2Up", "MouseEnter", "MouseLeave", "MouseMoved", "MouseWheelBackward", "MouseWheelForward", "SelectionChanged", "SelectionGained", "SelectionLost", "TouchLongPress", "TouchPan", "TouchPinch", "TouchRotate", "TouchSwipe", "TouchTap" })
+		apply(props)
 		return e("ImageButton", props, children)
 	end
 	local function TextButton(props: TextButtonProps, children)
-		applyEvent(props, { "Activated", "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "InputBegan", "InputChanged", "InputEnded", "MouseButton1Click", "MouseButton1Down", "MouseButton1Up", "MouseButton2Click", "MouseButton2Down", "MouseButton2Up", "MouseEnter", "MouseLeave", "MouseMoved", "MouseWheelBackward", "MouseWheelForward", "SelectionChanged", "SelectionGained", "SelectionLost", "TouchLongPress", "TouchPan", "TouchPinch", "TouchRotate", "TouchSwipe", "TouchTap" })
+		apply(props)
 		return e("TextButton", props, children)
 	end
 	local function ImageLabel(props: ImageLabelProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "InputBegan", "InputChanged", "InputEnded", "MouseEnter", "MouseLeave", "MouseMoved", "MouseWheelBackward", "MouseWheelForward", "SelectionChanged", "SelectionGained", "SelectionLost", "TouchLongPress", "TouchPan", "TouchPinch", "TouchRotate", "TouchSwipe", "TouchTap" })
+		apply(props)
 		return e("ImageLabel", props, children)
 	end
 	local function TextLabel(props: TextLabelProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "InputBegan", "InputChanged", "InputEnded", "MouseEnter", "MouseLeave", "MouseMoved", "MouseWheelBackward", "MouseWheelForward", "SelectionChanged", "SelectionGained", "SelectionLost", "TouchLongPress", "TouchPan", "TouchPinch", "TouchRotate", "TouchSwipe", "TouchTap" })
+		apply(props)
 		return e("TextLabel", props, children)
 	end
 	local function ScrollingFrame(props: ScrollingFrameProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "InputBegan", "InputChanged", "InputEnded", "MouseEnter", "MouseLeave", "MouseMoved", "MouseWheelBackward", "MouseWheelForward", "SelectionChanged", "SelectionGained", "SelectionLost", "TouchLongPress", "TouchPan", "TouchPinch", "TouchRotate", "TouchSwipe", "TouchTap" })
+		apply(props)
 		return e("ScrollingFrame", props, children)
 	end
 	local function TextBox(props: TextBoxProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "FocusLost", "Focused", "InputBegan", "InputChanged", "InputEnded", "MouseEnter", "MouseLeave", "MouseMoved", "MouseWheelBackward", "MouseWheelForward", "ReturnPressedFromOnScreenKeyboard", "SelectionChanged", "SelectionGained", "SelectionLost", "TouchLongPress", "TouchPan", "TouchPinch", "TouchRotate", "TouchSwipe", "TouchTap" })
+		apply(props)
 		return e("TextBox", props, children)
 	end
 	local function VideoFrame(props: VideoFrameProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "DidLoop", "Ended", "InputBegan", "InputChanged", "InputEnded", "Loaded", "MouseEnter", "MouseLeave", "MouseMoved", "MouseWheelBackward", "MouseWheelForward", "Paused", "Played", "SelectionChanged", "SelectionGained", "SelectionLost", "TouchLongPress", "TouchPan", "TouchPinch", "TouchRotate", "TouchSwipe", "TouchTap" })
+		apply(props)
 		return e("VideoFrame", props, children)
 	end
 	local function ViewportFrame(props: ViewportFrameProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "InputBegan", "InputChanged", "InputEnded", "MouseEnter", "MouseLeave", "MouseMoved", "MouseWheelBackward", "MouseWheelForward", "SelectionChanged", "SelectionGained", "SelectionLost", "TouchLongPress", "TouchPan", "TouchPinch", "TouchRotate", "TouchSwipe", "TouchTap" })
+		apply(props)
 		return e("ViewportFrame", props, children)
 	end
 	local function BillboardGui(props: BillboardGuiProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "SelectionChanged" })
+		apply(props)
 		return e("BillboardGui", props, children)
 	end
 	local function ScreenGui(props: ScreenGuiProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "SelectionChanged" })
+		apply(props)
 		return e("ScreenGui", props, children)
 	end
 	local function AdGui(props: AdGuiProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "SelectionChanged" })
+		apply(props)
 		return e("AdGui", props, children)
 	end
 	local function SurfaceGui(props: SurfaceGuiProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "SelectionChanged" })
+		apply(props)
 		return e("SurfaceGui", props, children)
 	end
 	local function CornerWedgePart(props: CornerWedgePartProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "TouchEnded", "Touched" })
+		apply(props)
 		return e("CornerWedgePart", props, children)
 	end
 	local function Part(props: PartProps<Part>, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "TouchEnded", "Touched" })
+		apply(props)
 		return e("Part", props, children)
 	end
 	local function Seat(props: SeatProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "TouchEnded", "Touched" })
+		apply(props)
 		return e("Seat", props, children)
 	end
 	local function SpawnLocation(props: SpawnLocationProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "TouchEnded", "Touched" })
+		apply(props)
 		return e("SpawnLocation", props, children)
 	end
 	local function WedgePart(props: WedgePartProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "TouchEnded", "Touched" })
+		apply(props)
 		return e("WedgePart", props, children)
 	end
 	local function MeshPart(props: MeshPartProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "TouchEnded", "Touched" })
+		apply(props)
 		return e("MeshPart", props, children)
 	end
 	local function PartOperation(props: PartOperationProps<PartOperation>, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "TouchEnded", "Touched" })
+		apply(props)
 		return e("PartOperation", props, children)
 	end
 	local function NegateOperation(props: NegateOperationProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "TouchEnded", "Touched" })
+		apply(props)
 		return e("NegateOperation", props, children)
 	end
 	local function UnionOperation(props: UnionOperationProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "TouchEnded", "Touched" })
+		apply(props)
 		return e("UnionOperation", props, children)
 	end
 	local function TrussPart(props: TrussPartProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "TouchEnded", "Touched" })
+		apply(props)
 		return e("TrussPart", props, children)
 	end
 	local function VehicleSeat(props: VehicleSeatProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "TouchEnded", "Touched" })
+		apply(props)
 		return e("VehicleSeat", props, children)
 	end
 	local function UIAspectRatioConstraint(props: UIAspectRatioConstraintProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying" })
+		apply(props)
 		return e("UIAspectRatioConstraint", props, children)
 	end
 	local function UISizeConstraint(props: UISizeConstraintProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying" })
+		apply(props)
 		return e("UISizeConstraint", props, children)
 	end
 	local function UITextSizeConstraint(props: UITextSizeConstraintProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying" })
+		apply(props)
 		return e("UITextSizeConstraint", props, children)
 	end
 	local function UICorner(props: UICornerProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying" })
+		apply(props)
 		return e("UICorner", props, children)
 	end
 	local function UIGradient(props: UIGradientProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying" })
+		apply(props)
 		return e("UIGradient", props, children)
 	end
 	local function UIGridLayout(props: UIGridLayoutProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying" })
+		apply(props)
 		return e("UIGridLayout", props, children)
 	end
 	local function UIListLayout(props: UIListLayoutProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying" })
+		apply(props)
 		return e("UIListLayout", props, children)
 	end
 	local function UIPageLayout(props: UIPageLayoutProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying", "PageEnter", "PageLeave", "Stopped" })
+		apply(props)
 		return e("UIPageLayout", props, children)
 	end
 	local function UITableLayout(props: UITableLayoutProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying" })
+		apply(props)
 		return e("UITableLayout", props, children)
 	end
 	local function UIPadding(props: UIPaddingProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying" })
+		apply(props)
 		return e("UIPadding", props, children)
 	end
 	local function UIScale(props: UIScaleProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying" })
+		apply(props)
 		return e("UIScale", props, children)
 	end
 	local function UIStroke(props: UIStrokeProps, children)
-		applyEvent(props, { "AncestryChanged", "AttributeChanged", "Changed", "ChildAdded", "ChildRemoved", "DescendantAdded", "DescendantRemoving", "Destroying" })
+		apply(props)
 		return e("UIStroke", props, children)
 	end
 	-- stylua: ignore end
