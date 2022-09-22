@@ -435,7 +435,7 @@ for klass in filtered_classes:
 
 top_lines: list[str] = list()
 if not INLINE_SIGNALS:
-    top_lines.append("\ttype Event<Rbx, A...> = (rbx: Rbx, A...) -> ()")
+    top_lines.append("type Event<Rbx, A...> = (rbx: Rbx, A...) -> ()")
 if not INLINE_INHERITED_PROPERTIES or not INLINE_INHERITED_SIGNALS:
     top_lines.extend(map(define_base_type, reference_count.keys()))
 if not INLINE_ENTIRE_TYPE:
