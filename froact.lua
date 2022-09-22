@@ -39,8 +39,8 @@ end
 
 -- stylua: ignore
 type ListConfig = (
-	{ orderByName: boolean?, setOrder: true, initial: number?, }
-	| { orderByName: boolean?, setOrder: false?, initial: nil }
+	{ orderByName: boolean?, setOrder: true, initial: number?, key: string? }
+	| { orderByName: boolean?, setOrder: false?, initial: nil, key: string? }
 )
 local function newList(roact)
 	return function(config: ListConfig, elements: { [number]: Element })
@@ -68,7 +68,10 @@ local function newList(roact)
 					then "Instance"
 					else "None"
 
-			local instanceName = className .. " " .. count[className]
+			local instanceName = if config.key
+					and element.props[config.key]
+				then element.props[config.key]
+				else className .. " " .. count[className]
 			if config.orderByName and sortType ~= "None" then
 				index += 1
 				instanceName = string.format(nameFormat, index, instanceName)
