@@ -197,16 +197,20 @@ function froact.configure<Hooks>(config: {
 		if config.defaultProperties then config.defaultProperties else {}
 	)
 	local function apply(props: any)
+		local toRemove = {}
 		for name, value in props do
 			if typeof(name) == "string" then
 				if name:sub(1, 2) == "on" then
 					props[(config.Roact.Event :: any)[name:sub(3)]] = value
-					props[name] = nil
+					toRemove[name] = true
 				elseif name:sub(1, 4) == "bind" then
 					props[(config.Roact.Change :: any)[name:sub(5)]] = value
-					props[name] = nil
+					toRemove[name] = true
 				end
 			end
+		end
+		for name, _ in toRemove do
+			props[name] = nil
 		end
 		if props.ref then
 			props[config.Roact.Ref] = props.ref
