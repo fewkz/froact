@@ -71,17 +71,52 @@ local element = ReverseLabel({
 })
 ```
 
-`froact.list` takes an array of elements and will generate names and set LayoutOrder.
-It returns a Roact fragment.
-For components, it will assign `layoutOrder` to props.
+`froact.list` takes an array of elements and returns a Roact fragment with generated keys for each element.
+If the `setOrder` config is enabled, it will set the `LayoutOrder` of elements.
+If an element is not an instance component, it will instead assign `layoutOrder` to props.
+
+If the `orderByName` config is enabled, keys will be prefixed by a number that can
+be sorted by a `UIListLayout` with `SortOrder.Name`.
+This makes the tree in the explorer easier to read in studio.
+
+The key of elements can be set to the value of a prop using the `key` config.
 ```lua
-local fragment = froact.list({ setOrder = true }, {
-    froact.UIListLayout({ SortOrder = Enum.SortOrder.LayoutOrder }), -- Gets named UIListLayout1
-    froact.TextLabel({ Text = "This line is first" }), -- Gets named TextLabel1
-    froact.TextLabel({ Text = "This line is second" }), -- Gets named TextLabel2
-    Timer({}) -- Gets named Timer1, since `name` was defined on it.
-    ReverseLabel({ text = "This line is last" }) -- Gets named ReverseLabel1, and has `layoutOrder` set.
+local list1 = froact.list({ setOrder = true }, {
+    froact.UIListLayout({ SortOrder = Enum.SortOrder.LayoutOrder }), -- Gets named UIListLayout
+    froact.TextLabel({ Text = "This line is first" }), -- Gets named TextLabel 1
+    froact.TextLabel({ Text = "This line is second" }), -- Gets named TextLabel 2
+    Timer({}) -- Gets named Timer, since `name` was defined on it.
+    ReverseLabel({ text = "This line is last" }) -- Gets named ReverseLabel, and has `layoutOrder` set.
 })
+local list2 = froact.list({ orderByName = true, key = "text" }, {
+    froact.UIListLayout({ SortOrder = Enum.SortOrder.Name }), -- Gets named UIListLayout
+    froact.TextLabel({ Text = "First line" }), -- Gets named 1 | First line
+    froact.TextLabel({ Text = "Second line" }), -- Gets named 2 | Second line
+})
+```
+
+You can connect to the events of an instance component via the `onEventName` prop.
+```lua
+local element = froact.TextButton({
+    onActivated = function()
+        print("Button was pressed")
+    end 
+})
+```
+You can connect to when a property of an instance component changes via the `bindPropertyName` prop.
+Froact only has bind props for `Text`, TextBounds`, and all `Absolute...` properties.
+Binds for `TextBounds` and `Absolute...` properties will trigger as soon as the element is mounted.
+```lua
+local element = froact.TextBox({
+    bindText = function(rbx)
+        print("Text was changed to", rbx.Text)
+    end 
+})
+```
+To assign a ref to an element, you can use the `ref` prop
+```lua
+local ref = froact.Roact.createRef()
+local element = froact.TextLabel({ ref = ref })
 ```
 
 # froact testing
