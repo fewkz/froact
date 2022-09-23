@@ -493,16 +493,20 @@ body_lines.append(
     """\
 \tlocal function apply(props: any)
 \t\tlocal toRemove = {}
+\t\tlocal toAdd = {}
 \t\tfor name, value in props do
 \t\t\tif typeof(name) == "string" then
 \t\t\t\tif name:sub(1, 2) == "on" then
-\t\t\t\t\tprops[(config.Roact.Event :: any)[name:sub(3)]] = value
+\t\t\t\t\ttoAdd[(config.Roact.Event :: any)[name:sub(3)]] = value
 \t\t\t\t\ttoRemove[name] = true
 \t\t\t\telseif name:sub(1, 4) == "bind" then
-\t\t\t\t\tprops[(config.Roact.Change :: any)[name:sub(5)]] = value
+\t\t\t\t\ttoAdd[(config.Roact.Change :: any)[name:sub(5)]] = value
 \t\t\t\t\ttoRemove[name] = true
 \t\t\t\tend
 \t\t\tend
+\t\tend
+\t\tfor name, value in toAdd do
+\t\t\tprops[name] = value
 \t\tend
 \t\tfor name, _ in toRemove do
 \t\t\tprops[name] = nil

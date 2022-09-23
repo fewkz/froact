@@ -198,16 +198,20 @@ function froact.configure<Hooks>(config: {
 	)
 	local function apply(props: any)
 		local toRemove = {}
+		local toAdd = {}
 		for name, value in props do
 			if typeof(name) == "string" then
 				if name:sub(1, 2) == "on" then
-					props[(config.Roact.Event :: any)[name:sub(3)]] = value
+					toAdd[(config.Roact.Event :: any)[name:sub(3)]] = value
 					toRemove[name] = true
 				elseif name:sub(1, 4) == "bind" then
-					props[(config.Roact.Change :: any)[name:sub(5)]] = value
+					toAdd[(config.Roact.Change :: any)[name:sub(5)]] = value
 					toRemove[name] = true
 				end
 			end
+		end
+		for name, value in toAdd do
+			props[name] = value
 		end
 		for name, _ in toRemove do
 			props[name] = nil
