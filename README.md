@@ -104,7 +104,7 @@ local element = froact.TextButton({
 })
 ```
 You can connect to when a property of an instance component changes via the `bindPropertyName` prop.
-Froact only has bind props for `Text`, TextBounds`, and all `Absolute...` properties.
+Froact only has bind props for `Text`, `TextBounds`, and all `Absolute...` properties.
 Binds for `TextBounds` and `Absolute...` properties will trigger as soon as the element is mounted.
 ```lua
 local element = froact.TextBox({
