@@ -7,7 +7,7 @@ You can download the latest release of froact as a rbxm file from https://github
 
 Froact can be added to your project via [Wally](https://wally.run/) by adding this line under dependencies.
 ```toml
-froact = "fewkz/froact@0.1.4"
+froact = "fewkz/froact@0.2.0"
 ```
 
 ## How to use
