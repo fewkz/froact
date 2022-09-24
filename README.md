@@ -24,6 +24,7 @@ local froact = baseFroact.configure({
 ```
 Configuration is where you give froact a reference to Roact and RoactHooks.
 You can also set default properties to be applied to all elements froact creates.
+For a good starting config, see [fluf-example-game/src/FroactConfig.lua](https://github.com/fewkz/fluf-example-game/blob/main/src/FroactConfig.lua).
 
 This configured version of froact should be used, not the base froact module.
 
