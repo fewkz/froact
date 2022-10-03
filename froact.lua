@@ -146,8 +146,10 @@ local function newList(roact: any)
 	end
 end
 
+local blankChildren = table.freeze({})
+
 type HookFunction<Props, Hooks> = (
-	render: (Props, Hooks) -> any,
+	render: (Props, Hooks, { Element }) -> any,
 	options: any
 ) -> any
 
@@ -158,12 +160,18 @@ local function newC<Hooks>(
 )
 	return function<Props>(
 		config: ComponentConfig,
-		body: (Props, Hooks) -> any
+		body: (Props, Hooks, { Element }) -> any
 	): (Props, Children) -> any
 		local isPure = if config.pure == nil
 			then not unpureByDefault
 			else config.pure
-		local Component = hooks(body, {
+		-- Wrap the body to have children passed in as a third argument
+		local function wrappedBody(props: any, hooks)
+			local children = props[roact.Children]
+			props[roact.Children] = nil
+			body(props, hooks, if children then children else blankChildren)
+		end
+		local Component = hooks(wrappedBody, {
 			componentType = if isPure then "PureComponent" else "Component",
 			name = if config.name then config.name else "Component",
 		})
