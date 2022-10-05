@@ -63,17 +63,13 @@ local function newTemplate(roact: any, unpureByDefault: boolean?)
 				end
 			end
 			self.updateCallbacks = {}
-			self.cleanup = f(hostKey, hostParent, function(f)
+			self.cleanup = f(hostKey, hostParent, function(callback)
+				callback(self.props)
 				table.insert(self.updateCallbacks, f)
 			end)
 		end
 		function Component:render()
 			return roact.createFragment()
-		end
-		function Component:didMount()
-			for _, callback in self.updateCallbacks do
-				callback(self.props)
-			end
 		end
 		function Component:didUpdate()
 			for _, callback in self.updateCallbacks do
