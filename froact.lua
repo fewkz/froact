@@ -39,7 +39,7 @@ end
 
 local function newTemplate(roact: any, unpureByDefault: boolean?)
 	type CleanupMethod = () -> ()
-	type UpdateMethod<Props> = (props: Props) -> ()
+	type UpdateMethod<Props> = (props: Props) -> CleanupMethod
 	type Constructor<Props> = (
 		name: string,
 		parent: Instance,
@@ -63,8 +63,9 @@ local function newTemplate(roact: any, unpureByDefault: boolean?)
 				end
 			end
 			self.updateCallbacks = {}
+			self.updateCleanups = {}
 			self.cleanup = f(hostKey, hostParent, function(callback)
-				callback(self.props)
+				table.insert(self.updateCleanups, callback(self.props))
 				table.insert(self.updateCallbacks, f)
 			end)
 		end
@@ -72,11 +73,18 @@ local function newTemplate(roact: any, unpureByDefault: boolean?)
 			return roact.createFragment()
 		end
 		function Component:didUpdate()
+			for _, cleanup in self.updateCleanups do
+				cleanup()
+			end
+			self.updateCleanups = {}
 			for _, callback in self.updateCallbacks do
-				callback(self.props)
+				table.insert(self.updateCleanups, callback(self.props))
 			end
 		end
 		function Component:willUnmount()
+			for _, cleanup in self.updateCleanups do
+				cleanup()
+			end
 			self.cleanup()
 		end
 		return function(props: Props, children)
