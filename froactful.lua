@@ -40,7 +40,7 @@ end
 
 local function newTemplate(roact: any, unpureByDefault: boolean?)
 	type CleanupMethod = () -> ()
-	type UpdateMethod<Props> = (props: Props) -> ()
+	type UpdateMethod<Props> = (props: Props) -> CleanupMethod
 	type Constructor<Props> = (
 		name: string,
 		parent: Instance,
@@ -64,24 +64,28 @@ local function newTemplate(roact: any, unpureByDefault: boolean?)
 				end
 			end
 			self.updateCallbacks = {}
-			self.cleanup = f(hostKey, hostParent, function(f)
+			self.updateCleanups = {}
+			self.cleanup = f(hostKey, hostParent, function(callback)
+				table.insert(self.updateCleanups, callback(self.props))
 				table.insert(self.updateCallbacks, f)
 			end)
 		end
 		function Component:render()
 			return roact.createFragment()
 		end
-		function Component:didMount()
-			for _, callback in self.updateCallbacks do
-				callback(self.props)
-			end
-		end
 		function Component:didUpdate()
+			for _, cleanup in self.updateCleanups do
+				cleanup()
+			end
+			self.updateCleanups = {}
 			for _, callback in self.updateCallbacks do
-				callback(self.props)
+				table.insert(self.updateCleanups, callback(self.props))
 			end
 		end
 		function Component:willUnmount()
+			for _, cleanup in self.updateCleanups do
+				cleanup()
+			end
 			self.cleanup()
 		end
 		return function(props: Props, children)
@@ -166,7 +170,7 @@ local function newC<Hooks>(
 		local isPure = if config.pure == nil
 			then not unpureByDefault
 			else config.pure
-		-- Wrap the body and pass children in
+		-- Wrap the body to have children passed in as a third argument
 		local function wrappedBody(props: any, hooks)
 			local children = props[roact.Children]
 			props[roact.Children] = nil
@@ -186,7 +190,7 @@ end
 type Event<Rbx, A...> = (rbx: Rbx, A...) -> ()
 type BindProperty<Rbx> = (rbx: Rbx) -> ()
 type InstanceProps<Rbx> = { Archivable: boolean?, Name: string?, Parent: Instance?, onAncestryChanged: Event<Rbx, Instance, Instance?>?, onAttributeChanged: Event<Rbx, string>?, onChanged: Event<Rbx, string>?, onChildAdded: Event<Rbx, Instance>?, onChildRemoved: Event<Rbx, Instance>?, onDescendantAdded: Event<Rbx, Instance>?, onDescendantRemoving: Event<Rbx, Instance>?, onDestroying: Event<Rbx>? }
-type GuiObjectProps<Rbx> = GuiBase2dProps<Rbx> & { Active: boolean?, AnchorPoint: Vector2?, AutomaticSize: Enum.AutomaticSize?, BackgroundColor3: Color3?, BackgroundTransparency: number?, BorderColor3: Color3?, BorderMode: Enum.BorderMode?, BorderSizePixel: number?, ClipsDescendants: boolean?, LayoutOrder: number?, NextSelectionDown: GuiObject?, NextSelectionLeft: GuiObject?, NextSelectionRight: GuiObject?, NextSelectionUp: GuiObject?, Position: UDim2?, Rotation: number?, Selectable: boolean?, SelectionImageObject: GuiObject?, SelectionOrder: number?, Size: UDim2?, SizeConstraint: Enum.SizeConstraint?, Transparency: number?, Visible: boolean?, ZIndex: number?, onInputBegan: Event<Rbx, InputObject>?, onInputChanged: Event<Rbx, InputObject>?, onInputEnded: Event<Rbx, InputObject>?, onMouseEnter: Event<Rbx, number, number>?, onMouseLeave: Event<Rbx, number, number>?, onMouseMoved: Event<Rbx, number, number>?, onMouseWheelBackward: Event<Rbx, number, number>?, onMouseWheelForward: Event<Rbx, number, number>?, onSelectionGained: Event<Rbx>?, onSelectionLost: Event<Rbx>?, onTouchLongPress: Event<Rbx, { any }, Enum.UserInputState>?, onTouchPan: Event<Rbx, { any }, Vector2, Vector2, Enum.UserInputState>?, onTouchPinch: Event<Rbx, { any }, number, number, Enum.UserInputState>?, onTouchRotate: Event<Rbx, { any }, number, number, Enum.UserInputState>?, onTouchSwipe: Event<Rbx, Enum.SwipeDirection, number>?, onTouchTap: Event<Rbx, { any }>? }
+type GuiObjectProps<Rbx> = GuiBase2dProps<Rbx> & { Active: boolean?, AnchorPoint: Vector2?, AutomaticSize: Enum.AutomaticSize?, BackgroundColor3: Color3?, BackgroundTransparency: number?, BorderColor3: Color3?, BorderMode: Enum.BorderMode?, BorderSizePixel: number?, ClipsDescendants: boolean?, LayoutOrder: number?, NextSelectionDown: GuiObject?, NextSelectionLeft: GuiObject?, NextSelectionRight: GuiObject?, NextSelectionUp: GuiObject?, Position: UDim2?, Rotation: number?, Selectable: boolean?, SelectionImageObject: GuiObject?, SelectionOrder: number?, Size: UDim2?, SizeConstraint: Enum.SizeConstraint?, Transparency: number?, Visible: boolean?, ZIndex: number?, onInputBegan: Event<Rbx, InputObject>?, onInputChanged: Event<Rbx, InputObject>?, onInputEnded: Event<Rbx, InputObject>?, onMouseEnter: Event<Rbx, number, number>?, onMouseLeave: Event<Rbx, number, number>?, onMouseMoved: Event<Rbx, number, number>?, onMouseWheelBackward: Event<Rbx, number, number>?, onMouseWheelForward: Event<Rbx, number, number>?, onSelectionGained: Event<Rbx>?, onSelectionLost: Event<Rbx>?, onTouchLongPress: Event<Rbx, { Vector2 }, Enum.UserInputState>?, onTouchPan: Event<Rbx, { Vector2 }, Vector2, Vector2, Enum.UserInputState>?, onTouchPinch: Event<Rbx, { Vector2 }, number, number, Enum.UserInputState>?, onTouchRotate: Event<Rbx, { Vector2 }, number, number, Enum.UserInputState>?, onTouchSwipe: Event<Rbx, Enum.SwipeDirection, number>?, onTouchTap: Event<Rbx, { Vector2 }>? }
 type GuiBase2dProps<Rbx> = GuiBaseProps<Rbx> & { AutoLocalize: boolean?, RootLocalizationTable: LocalizationTable?, SelectionBehaviorDown: Enum.SelectionBehavior?, SelectionBehaviorLeft: Enum.SelectionBehavior?, SelectionBehaviorRight: Enum.SelectionBehavior?, SelectionBehaviorUp: Enum.SelectionBehavior?, SelectionGroup: boolean?, bindAbsolutePosition: BindProperty<Rbx>?, bindAbsoluteRotation: BindProperty<Rbx>?, bindAbsoluteSize: BindProperty<Rbx>?, onSelectionChanged: Event<Rbx, boolean, GuiObject, GuiObject>? }
 type GuiBaseProps<Rbx> = InstanceProps<Rbx>
 type GuiButtonProps<Rbx> = GuiObjectProps<Rbx> & { AutoButtonColor: boolean?, Modal: boolean?, Selected: boolean?, Style: Enum.ButtonStyle?, onActivated: Event<Rbx, InputObject, number>?, onMouseButton1Click: Event<Rbx>?, onMouseButton1Down: Event<Rbx, number, number>?, onMouseButton1Up: Event<Rbx, number, number>?, onMouseButton2Click: Event<Rbx>?, onMouseButton2Down: Event<Rbx, number, number>?, onMouseButton2Up: Event<Rbx, number, number>? }
@@ -194,7 +198,7 @@ type GuiLabelProps<Rbx> = GuiObjectProps<Rbx>
 type LayerCollectorProps<Rbx> = GuiBase2dProps<Rbx> & { Enabled: boolean?, ResetOnSpawn: boolean?, ZIndexBehavior: Enum.ZIndexBehavior? }
 type SurfaceGuiBaseProps<Rbx> = LayerCollectorProps<Rbx> & { Active: boolean?, Adornee: Instance?, Face: Enum.NormalId? }
 type BasePartProps<Rbx> = PVInstanceProps<Rbx> & { Anchored: boolean?, AssemblyAngularVelocity: Vector3?, AssemblyLinearVelocity: Vector3?, BackSurface: Enum.SurfaceType?, BottomSurface: Enum.SurfaceType?, BrickColor: BrickColor?, CFrame: CFrame?, CanCollide: boolean?, CanQuery: boolean?, CanTouch: boolean?, CastShadow: boolean?, CollisionGroup: string?, CollisionGroupId: number?, Color: Color3?, CustomPhysicalProperties: PhysicalProperties?, FrontSurface: Enum.SurfaceType?, LeftSurface: Enum.SurfaceType?, LocalTransparencyModifier: number?, Locked: boolean?, Massless: boolean?, Material: Enum.Material?, MaterialVariant: string?, Orientation: Vector3?, PivotOffset: CFrame?, Position: Vector3?, Reflectance: number?, RightSurface: Enum.SurfaceType?, RootPriority: number?, Rotation: Vector3?, Size: Vector3?, TopSurface: Enum.SurfaceType?, Transparency: number?, onTouchEnded: Event<Rbx, BasePart>?, onTouched: Event<Rbx, BasePart>? }
-type PVInstanceProps<Rbx> = InstanceProps<Rbx>
+type PVInstanceProps<Rbx> = InstanceProps<Rbx> & { Origin: CFrame? }
 type FormFactorPartProps<Rbx> = BasePartProps<Rbx>
 type PartProps<Rbx> = FormFactorPartProps<Rbx> & { Shape: Enum.PartType? }
 type TriangleMeshPartProps<Rbx> = BasePartProps<Rbx>
@@ -216,7 +220,7 @@ type TextBoxProps = GuiObjectProps<TextBox> & { ClearTextOnFocus: boolean?, Curs
 type VideoFrameProps = GuiObjectProps<VideoFrame> & { Looped: boolean?, Playing: boolean?, TimePosition: number?, Video: string?, Volume: number?, onDidLoop: Event<VideoFrame, string>?, onEnded: Event<VideoFrame, string>?, onLoaded: Event<VideoFrame, string>?, onPaused: Event<VideoFrame, string>?, onPlayed: Event<VideoFrame, string>? }
 type ViewportFrameProps = GuiObjectProps<ViewportFrame> & { Ambient: Color3?, CurrentCamera: Camera?, ImageColor3: Color3?, ImageTransparency: number?, LightColor: Color3?, LightDirection: Vector3? }
 type BillboardGuiProps = LayerCollectorProps<BillboardGui> & { Active: boolean?, Adornee: Instance?, AlwaysOnTop: boolean?, Brightness: number?, ClipsDescendants: boolean?, DistanceLowerLimit: number?, DistanceStep: number?, DistanceUpperLimit: number?, ExtentsOffset: Vector3?, ExtentsOffsetWorldSpace: Vector3?, LightInfluence: number?, MaxDistance: number?, PlayerToHideFrom: Instance?, Size: UDim2?, SizeOffset: Vector2?, StudsOffset: Vector3?, StudsOffsetWorldSpace: Vector3? }
-type ScreenGuiProps = LayerCollectorProps<ScreenGui> & { DisplayOrder: number?, IgnoreGuiInset: boolean? }
+type ScreenGuiProps = LayerCollectorProps<ScreenGui> & { ClipToDeviceSafeArea: boolean?, DisplayOrder: number?, IgnoreGuiInset: boolean?, SafeAreaCompatibility: Enum.SafeAreaCompatibility?, ScreenInsets: Enum.ScreenInsets? }
 type AdGuiProps = SurfaceGuiBaseProps<AdGui> & { AdShape: Enum.AdShape? }
 type SurfaceGuiProps = SurfaceGuiBaseProps<SurfaceGui> & { AlwaysOnTop: boolean?, Brightness: number?, CanvasSize: Vector2?, ClipsDescendants: boolean?, LightInfluence: number?, PixelsPerStud: number?, SizingMode: Enum.SurfaceGuiSizingMode?, ToolPunchThroughDistance: number?, ZOffset: number? }
 type CornerWedgePartProps = BasePartProps<CornerWedgePart> & {  }
@@ -224,6 +228,7 @@ type SeatProps = PartProps<Seat> & { Disabled: boolean? }
 type SpawnLocationProps = PartProps<SpawnLocation> & { AllowTeamChangeOnTouch: boolean?, Duration: number?, Enabled: boolean?, Neutral: boolean?, TeamColor: BrickColor? }
 type WedgePartProps = FormFactorPartProps<WedgePart> & {  }
 type MeshPartProps = TriangleMeshPartProps<MeshPart> & { TextureID: string? }
+type IntersectOperationProps = PartOperationProps<IntersectOperation> & {  }
 type NegateOperationProps = PartOperationProps<NegateOperation> & {  }
 type UnionOperationProps = PartOperationProps<UnionOperation> & {  }
 type TrussPartProps = BasePartProps<TrussPart> & { Style: Enum.Style? }
@@ -366,6 +371,10 @@ function froact.configure<Hooks>(config: {
 		apply(props)
 		return e("PartOperation", props, children)
 	end
+	local function IntersectOperation(props: IntersectOperationProps, children)
+		apply(props)
+		return e("IntersectOperation", props, children)
+	end
 	local function NegateOperation(props: NegateOperationProps, children)
 		apply(props)
 		return e("NegateOperation", props, children)
@@ -460,6 +469,7 @@ function froact.configure<Hooks>(config: {
 		WedgePart = WedgePart,
 		MeshPart = MeshPart,
 		PartOperation = PartOperation,
+		IntersectOperation = IntersectOperation,
 		NegateOperation = NegateOperation,
 		UnionOperation = UnionOperation,
 		TrussPart = TrussPart,
