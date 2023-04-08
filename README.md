@@ -173,7 +173,19 @@ sprinkle in some froact code to your existing Roact codebase and immediately rea
 the benefits froact can offer. In the video, note how the `props` that Luau infers
 immediately become way better after changing from Roact to froact.
 
-https://user-images.githubusercontent.com/83943819/230715907-d4566d7d-d28a-46dc-94c7-dd4d34db70e6.mp4
+https://user-images.githubusercontent.com/83943819/230716180-ad50e3c9-1531-4910-8fbb-75400cf591ac.mp4
+
+## Froact with intellisense
+
+When using a Luau language server, like [luau-lsp](https://github.com/JohnnyMorganz/luau-lsp),
+froact will provide full intellisense out of the box, giving you autocomplete as such:
+
+![2023-04-08_06-25-37](https://user-images.githubusercontent.com/83943819/230716251-2d6397f8-dc57-45b5-87a2-ebac0e2951ea.png)
+
+And automatically typed parameters to callbacks:
+
+![Code_2023-04-08_06-22-46](https://user-images.githubusercontent.com/83943819/230716207-664beb5c-8fb5-455b-9f3d-214241357d9e.png)
+
 
 
 
