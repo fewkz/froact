@@ -104,7 +104,7 @@ local list1 = froact.list({ setOrder = true }, {
     Timer({}) -- Gets named Timer, since `name` was defined on it.
     ReverseLabel({ text = "This line is last" }) -- Gets named ReverseLabel, and has `layoutOrder` set.
 })
-local list2 = froact.list({ orderByName = true, key = "text" }, {
+local list2 = froact.list({ orderByName = true, key = "Text" }, {
     froact.UIListLayout({ SortOrder = Enum.SortOrder.Name }), -- Gets named UIListLayout
     froact.TextLabel({ Text = "First line" }), -- Gets named 1 | First line
     froact.TextLabel({ Text = "Second line" }), -- Gets named 2 | Second line
