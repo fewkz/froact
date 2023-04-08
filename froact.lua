@@ -153,7 +153,7 @@ end
 local blankChildren = table.freeze({})
 
 type HookFunction<Props, Hooks> = (
-	render: (Props, Hooks, { Element }) -> any,
+	render: (Props, Hooks) -> any,
 	options: any
 ) -> any
 
@@ -173,7 +173,7 @@ local function newC<Hooks>(
 		local function wrappedBody(props: any, hooks)
 			local children = props[roact.Children]
 			props[roact.Children] = nil
-			body(props, hooks, if children then children else blankChildren)
+			return body(props, hooks, if children then children else blankChildren)
 		end
 		local Component = hooks(wrappedBody, {
 			componentType = if isPure then "PureComponent" else "Component",
