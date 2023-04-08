@@ -182,7 +182,7 @@ froact will provide full intellisense out of the box, giving you autocomplete as
 
 ![2023-04-08_06-25-37](https://user-images.githubusercontent.com/83943819/230716251-2d6397f8-dc57-45b5-87a2-ebac0e2951ea.png)
 
-And automatically typed parameters to callbacks (see [#Issues](#issues), however):
+And automatically typed parameters to callbacks (see [Issues](#issues), however):
 
 ![Code_2023-04-08_06-22-46](https://user-images.githubusercontent.com/83943819/230716207-664beb5c-8fb5-455b-9f3d-214241357d9e.png)
 
