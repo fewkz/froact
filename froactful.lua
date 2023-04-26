@@ -47,9 +47,7 @@ local function newTemplate(roact: any, unpureByDefault: boolean?)
 		onUpdate: (UpdateMethod<Props>) -> ()
 	) -> CleanupMethod
 	return function<Props>(config: ComponentConfig, f: Constructor<Props>)
-		local isPure = if config.pure == nil
-			then not unpureByDefault
-			else config.pure
+		local isPure = if config.pure == nil then not unpureByDefault else config.pure
 		local Component = if isPure
 			then roact.PureComponent:extend(config.name or "Component")
 			else roact.Component:extend(config.name or "Component")
@@ -104,9 +102,7 @@ local function newList(roact: any)
 		local index = if config.initial then config.initial else 0
 		local count: { [string]: number } = {}
 		local dict = {}
-		local nameFormat = "%0"
-			.. math.floor(math.log10(#elements) + 1)
-			.. "i | %s" -- For orderByName
+		local nameFormat = "%0" .. math.floor(math.log10(#elements) + 1) .. "i | %s" -- For orderByName
 		for _, element in elements do
 			local isRobloxClass = typeof(element.component) == "string"
 			local className = if isRobloxClass
@@ -115,8 +111,7 @@ local function newList(roact: any)
 
 			local sortType = if not isRobloxClass
 				then "Component"
-				else if isRobloxClass
-						and isA(element.component, "GuiObject")
+				else if isRobloxClass and isA(element.component, "GuiObject")
 					then "Instance"
 					else "None"
 
@@ -153,23 +148,14 @@ end
 
 local blankChildren = table.freeze({})
 
-type HookFunction<Props, Hooks> = (
-	render: (Props, Hooks) -> any,
-	options: any
-) -> any
+type HookFunction<Props, Hooks> = (render: (Props, Hooks) -> any, options: any) -> any
 
-local function newC<Hooks>(
-	roact: any,
-	hooks: HookFunction<any, Hooks>,
-	unpureByDefault: boolean?
-)
+local function newC<Hooks>(roact: any, hooks: HookFunction<any, Hooks>, unpureByDefault: boolean?)
 	return function<Props>(
 		config: ComponentConfig,
 		body: (Props, Hooks, { Element }) -> any
 	): (Props, Children) -> any
-		local isPure = if config.pure == nil
-			then not unpureByDefault
-			else config.pure
+		local isPure = if config.pure == nil then not unpureByDefault else config.pure
 		-- Wrap the body to have children passed in as a third argument
 		local function wrappedBody(props: any, hooks)
 			local children = props[roact.Children]
@@ -490,4 +476,3 @@ function froact.configure<Hooks>(config: {
 end
 
 return froact
-
