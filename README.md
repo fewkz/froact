@@ -192,6 +192,7 @@ If you run into issues where, you're creating an element like:
 `TextButton({ onActivated = function(rbx) end })`, and Luau is unable to infer
 `rbx` as `TextButton`, you may want to set the following parameters to `True`:
 https://github.com/fewkz/froact/blob/0b749d9a2cfb90eb03780e29f2bcbb7e587f8628/generate.py#L26-L29
+After which, run the following command: `python generate.py > froactful.lua`.
 This will fix Luau not being able to infer the parameter correctly, but may
 drastically increase the size of `froactful.lua`, the added convenience is
 definitely worth it however. The distributed version of froact has these set to
