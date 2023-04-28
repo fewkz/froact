@@ -222,11 +222,12 @@ end
 -- forgetting to include dependencies is a very easy way to
 -- shoot yourself in the foot optimization-wise.
 type Hooks = {
-	useBinding: <T>(defaultValue: T) -> (Binding<T>, (newValue: T) -> ()),
+	useBinding: <T>(default: T) -> (Binding<T>, (value: T) -> ()),
 	useCallback: <A..., R...>(
 		callback: (A...) -> R...,
 		dependencies: { unknown }
 	) -> (A...) -> R...,
+	useContext: (context: any) -> any,
 	useEffect: (callback: () -> (), dependencies: { unknown }) -> (),
 	useMemo: <T...>(factory: () -> T..., dependencies: { unknown }) -> T...,
 	useReducer: <S, A>(
@@ -234,6 +235,7 @@ type Hooks = {
 		initialState: S
 	) -> (S, (action: A) -> ()),
 	useState: <T>(default: T | (() -> T)) -> (T, (value: T) -> ()),
+	useValue: <T>(default: T) -> { value: T },
 }
 
 -- FROACTFUL_FUNCTION_TOP
