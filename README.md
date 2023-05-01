@@ -4,6 +4,20 @@ Froact is a wrapper around [Roact](https://github.com/Roblox/roact) and
 [Roact Hooks](https://github.com/Kampfkarren/roact-hooks) to make UI development
 easier via utilies and improved types.
 
+<!-- TOC start (generated with https://github.com/derlin/bitdowntoc) -->
+
+  * [Adding froact](#adding-froact)
+  * [How to use](#how-to-use)
+  * [Features](#features)
+  * [Migrating to froact](#migrating-to-froact)
+  * [Froact with intellisense](#froact-with-intellisense)
+  * [VSCode Snippets](#vscode-snippets)
+  * [Issues](#issues)
+- [froact testing](#froact-testing)
+  * [Getting Started](#getting-started)
+
+<!-- TOC end -->
+
 ## Adding froact
 
 You can download the latest release of froact as a rbxm file from
