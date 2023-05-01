@@ -186,6 +186,11 @@ And automatically typed parameters to callbacks (see [Issues](#issues), however)
 
 ![Code_2023-04-08_06-22-46](https://user-images.githubusercontent.com/83943819/230716207-664beb5c-8fb5-455b-9f3d-214241357d9e.png)
 
+## VSCode Snippets
+
+Here's a gist that includes some VSCode snippets for froact you can add to your user snippets manually.
+https://gist.github.com/fewkz/7e55030bf9c7e17c76e00baf2c0283bb
+
 ## Issues
 
 If you run into issues where, you're creating an element like:
