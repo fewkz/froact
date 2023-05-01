@@ -171,13 +171,81 @@ local function newC<Hooks>(roact: any, hooks: HookFunction<any, Hooks>, unpureBy
 	end
 end
 
+type Ref = { current: any }
+local function newCreateRef(roact: any): () -> Ref
+	return roact.createRef
+end
+
+type Binding<T> = { getValue: (self: Binding<T>) -> T }
+local function newCreateBinding(roact: any): <T>(default: T) -> (Binding<T>, (T) -> ())
+	return roact.createBinding
+end
+
+type BindingPairs<T...> = { map: <O>(self: BindingPairs<T...>, f: (T...) -> O) -> Binding<O> }
+local function newJoin(roact: any): (
+	(<A>(b1: Binding<A>) -> BindingPairs<A>)
+	& (<A, B>(b1: Binding<A>, b2: Binding<B>) -> BindingPairs<A, B>)
+	& (<A, B, C>(b1: Binding<A>, b2: Binding<B>, b3: Binding<C>) -> BindingPairs<A, B, C>)
+	& (<A, B, C, D>(
+		b1: Binding<A>,
+		b2: Binding<B>,
+		b3: Binding<C>,
+		b4: Binding<D>
+	) -> BindingPairs<A, B, C, D>)
+)
+	return (
+		function(...)
+			local bindings = { ... }
+			local joined = roact.joinBindings(bindings)
+			return {
+				map = function(self, f)
+					return joined:map(function(a)
+						return f(unpack(a))
+					end)
+				end,
+			}
+		end
+	) :: any
+end
+
+local function newMap(roact: any): <T, O>(binding: Binding<T>, f: (T) -> O) -> Binding<O>
+	return function(binding: any, f)
+		return binding:map(f)
+	end
+end
+
+-- We write our own Hooks type. Might make froact incompatible
+-- with different versions of RoactHooks, although it's unlikely
+-- there'd be a breaking change any time soon. We could consider
+-- vendoring our own RoactHooks eventually.
+-- One opinionated change we make is not making dependencies optional.
+-- forgetting to include dependencies is a very easy way to
+-- shoot yourself in the foot optimization-wise.
+type Hooks = {
+	useBinding: <T>(default: T) -> (Binding<T>, (value: T) -> ()),
+	useCallback: <A..., R...>(
+		callback: (A...) -> R...,
+		dependencies: { unknown }
+	) -> (A...) -> R...,
+	useContext: (context: any) -> any,
+	useEffect: (callback: () -> (), dependencies: { unknown }) -> (),
+	useMemo: <T...>(factory: () -> T..., dependencies: { unknown }) -> T...,
+	useReducer: <S, A>(
+		reducer: (state: S, action: A) -> S,
+		initialState: S
+	) -> (S, (action: A) -> ()),
+	useState: <T>(default: T | (() -> T)) -> (T, (value: T) -> ()),
+	useValue: <T>(default: T) -> { value: T },
+}
+
 -- FROACTFUL_FUNCTION_TOP
-function froact.configure<Hooks>(config: {
+function froact.configure(config: {
 	Roact: any,
-	Hooks: HookFunction<any, Hooks>,
+	Hooks: HookFunction<any, any>,
 	defaultProperties: { DefaultPropertyConfig }?,
 	unpureByDefault: boolean?,
 })
+	local hooks: HookFunction<any, Hooks> = config.Hooks
 	local e = newE(
 		config.Roact,
 		config.Hooks,
@@ -186,11 +254,15 @@ function froact.configure<Hooks>(config: {
 	-- FROACTFUL_FUNCTION_BODY
 	return {
 		Roact = config.Roact,
-		Hooks = config.Hooks,
+		Hooks = hooks,
 		e = e,
-		c = newC(config.Roact, config.Hooks, config.unpureByDefault),
+		c = newC(config.Roact, hooks, config.unpureByDefault),
 		list = newList(config.Roact),
 		template = newTemplate(config.Roact, config.unpureByDefault),
+		createRef = newCreateRef(config.Roact),
+		createBinding = newCreateBinding(config.Roact),
+		join = newJoin(config.Roact),
+		map = newMap(config.Roact),
 		-- FROACTFUL_FUNCTION_EXPORTS
 	}
 end

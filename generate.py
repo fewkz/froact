@@ -241,7 +241,8 @@ def get_class_property_fields(klass: str):
     property_fields = {
         f for f in fields if not f[1].startswith("RBXScriptSignal")}
     return tuple(
-        (name, make_optional(property_type_definition(type_def)))
+        (name, make_optional("{0} | Binding<{0}>".format(
+            property_type_definition(type_def))))
         for (name, type_def) in property_fields
         if type_def not in ignored_types
     )

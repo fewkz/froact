@@ -172,72 +172,140 @@ local function newC<Hooks>(roact: any, hooks: HookFunction<any, Hooks>, unpureBy
 	end
 end
 
+type Ref = { current: any }
+local function newCreateRef(roact: any): () -> Ref
+	return roact.createRef
+end
+
+type Binding<T> = { getValue: (self: Binding<T>) -> T }
+local function newCreateBinding(roact: any): <T>(default: T) -> (Binding<T>, (T) -> ())
+	return roact.createBinding
+end
+
+type BindingPairs<T...> = { map: <O>(self: BindingPairs<T...>, f: (T...) -> O) -> Binding<O> }
+local function newJoin(roact: any): (
+	(<A>(b1: Binding<A>) -> BindingPairs<A>)
+	& (<A, B>(b1: Binding<A>, b2: Binding<B>) -> BindingPairs<A, B>)
+	& (<A, B, C>(b1: Binding<A>, b2: Binding<B>, b3: Binding<C>) -> BindingPairs<A, B, C>)
+	& (<A, B, C, D>(
+		b1: Binding<A>,
+		b2: Binding<B>,
+		b3: Binding<C>,
+		b4: Binding<D>
+	) -> BindingPairs<A, B, C, D>)
+)
+	return (
+		function(...)
+			local bindings = { ... }
+			local joined = roact.joinBindings(bindings)
+			return {
+				map = function(self, f)
+					return joined:map(function(a)
+						return f(unpack(a))
+					end)
+				end,
+			}
+		end
+	) :: any
+end
+
+local function newMap(roact: any): <T, O>(binding: Binding<T>, f: (T) -> O) -> Binding<O>
+	return function(binding: any, f)
+		return binding:map(f)
+	end
+end
+
+-- We write our own Hooks type. Might make froact incompatible
+-- with different versions of RoactHooks, although it's unlikely
+-- there'd be a breaking change any time soon. We could consider
+-- vendoring our own RoactHooks eventually.
+-- One opinionated change we make is not making dependencies optional.
+-- forgetting to include dependencies is a very easy way to
+-- shoot yourself in the foot optimization-wise.
+type Hooks = {
+	useBinding: <T>(default: T) -> (Binding<T>, (value: T) -> ()),
+	useCallback: <A..., R...>(
+		callback: (A...) -> R...,
+		dependencies: { unknown }
+	) -> (A...) -> R...,
+	useContext: (context: any) -> any,
+	useEffect: (callback: () -> (), dependencies: { unknown }) -> (),
+	useMemo: <T...>(factory: () -> T..., dependencies: { unknown }) -> T...,
+	useReducer: <S, A>(
+		reducer: (state: S, action: A) -> S,
+		initialState: S
+	) -> (S, (action: A) -> ()),
+	useState: <T>(default: T | (() -> T)) -> (T, (value: T) -> ()),
+	useValue: <T>(default: T) -> { value: T },
+}
+
 -- stylua: ignore start
 type Event<Rbx, A...> = (rbx: Rbx, A...) -> ()
 type BindProperty<Rbx> = (rbx: Rbx) -> ()
-type InstanceProps<Rbx> = { Archivable: boolean?, Name: string?, Parent: Instance?, onAncestryChanged: Event<Rbx, Instance, Instance?>?, onAttributeChanged: Event<Rbx, string>?, onChanged: Event<Rbx, string>?, onChildAdded: Event<Rbx, Instance>?, onChildRemoved: Event<Rbx, Instance>?, onDescendantAdded: Event<Rbx, Instance>?, onDescendantRemoving: Event<Rbx, Instance>?, onDestroying: Event<Rbx>? }
-type GuiObjectProps<Rbx> = GuiBase2dProps<Rbx> & { Active: boolean?, AnchorPoint: Vector2?, AutomaticSize: Enum.AutomaticSize?, BackgroundColor3: Color3?, BackgroundTransparency: number?, BorderColor3: Color3?, BorderMode: Enum.BorderMode?, BorderSizePixel: number?, ClipsDescendants: boolean?, LayoutOrder: number?, NextSelectionDown: GuiObject?, NextSelectionLeft: GuiObject?, NextSelectionRight: GuiObject?, NextSelectionUp: GuiObject?, Position: UDim2?, Rotation: number?, Selectable: boolean?, SelectionImageObject: GuiObject?, SelectionOrder: number?, Size: UDim2?, SizeConstraint: Enum.SizeConstraint?, Transparency: number?, Visible: boolean?, ZIndex: number?, onInputBegan: Event<Rbx, InputObject>?, onInputChanged: Event<Rbx, InputObject>?, onInputEnded: Event<Rbx, InputObject>?, onMouseEnter: Event<Rbx, number, number>?, onMouseLeave: Event<Rbx, number, number>?, onMouseMoved: Event<Rbx, number, number>?, onMouseWheelBackward: Event<Rbx, number, number>?, onMouseWheelForward: Event<Rbx, number, number>?, onSelectionGained: Event<Rbx>?, onSelectionLost: Event<Rbx>?, onTouchLongPress: Event<Rbx, { Vector2 }, Enum.UserInputState>?, onTouchPan: Event<Rbx, { Vector2 }, Vector2, Vector2, Enum.UserInputState>?, onTouchPinch: Event<Rbx, { Vector2 }, number, number, Enum.UserInputState>?, onTouchRotate: Event<Rbx, { Vector2 }, number, number, Enum.UserInputState>?, onTouchSwipe: Event<Rbx, Enum.SwipeDirection, number>?, onTouchTap: Event<Rbx, { Vector2 }>? }
-type GuiBase2dProps<Rbx> = GuiBaseProps<Rbx> & { AutoLocalize: boolean?, RootLocalizationTable: LocalizationTable?, SelectionBehaviorDown: Enum.SelectionBehavior?, SelectionBehaviorLeft: Enum.SelectionBehavior?, SelectionBehaviorRight: Enum.SelectionBehavior?, SelectionBehaviorUp: Enum.SelectionBehavior?, SelectionGroup: boolean?, bindAbsolutePosition: BindProperty<Rbx>?, bindAbsoluteRotation: BindProperty<Rbx>?, bindAbsoluteSize: BindProperty<Rbx>?, onSelectionChanged: Event<Rbx, boolean, GuiObject, GuiObject>? }
+type InstanceProps<Rbx> = { Archivable: boolean | Binding<boolean>?, Name: string | Binding<string>?, Parent: Instance? | Binding<Instance?>?, onAncestryChanged: Event<Rbx, Instance, Instance?>?, onAttributeChanged: Event<Rbx, string>?, onChanged: Event<Rbx, string>?, onChildAdded: Event<Rbx, Instance>?, onChildRemoved: Event<Rbx, Instance>?, onDescendantAdded: Event<Rbx, Instance>?, onDescendantRemoving: Event<Rbx, Instance>?, onDestroying: Event<Rbx>? }
+type GuiObjectProps<Rbx> = GuiBase2dProps<Rbx> & { Active: boolean | Binding<boolean>?, AnchorPoint: Vector2 | Binding<Vector2>?, AutomaticSize: Enum.AutomaticSize | Binding<Enum.AutomaticSize>?, BackgroundColor3: Color3 | Binding<Color3>?, BackgroundTransparency: number | Binding<number>?, BorderColor3: Color3 | Binding<Color3>?, BorderMode: Enum.BorderMode | Binding<Enum.BorderMode>?, BorderSizePixel: number | Binding<number>?, ClipsDescendants: boolean | Binding<boolean>?, LayoutOrder: number | Binding<number>?, NextSelectionDown: GuiObject | Binding<GuiObject>?, NextSelectionLeft: GuiObject | Binding<GuiObject>?, NextSelectionRight: GuiObject | Binding<GuiObject>?, NextSelectionUp: GuiObject | Binding<GuiObject>?, Position: UDim2 | Binding<UDim2>?, Rotation: number | Binding<number>?, Selectable: boolean | Binding<boolean>?, SelectionImageObject: GuiObject | Binding<GuiObject>?, SelectionOrder: number | Binding<number>?, Size: UDim2 | Binding<UDim2>?, SizeConstraint: Enum.SizeConstraint | Binding<Enum.SizeConstraint>?, Transparency: number | Binding<number>?, Visible: boolean | Binding<boolean>?, ZIndex: number | Binding<number>?, onInputBegan: Event<Rbx, InputObject>?, onInputChanged: Event<Rbx, InputObject>?, onInputEnded: Event<Rbx, InputObject>?, onMouseEnter: Event<Rbx, number, number>?, onMouseLeave: Event<Rbx, number, number>?, onMouseMoved: Event<Rbx, number, number>?, onMouseWheelBackward: Event<Rbx, number, number>?, onMouseWheelForward: Event<Rbx, number, number>?, onSelectionGained: Event<Rbx>?, onSelectionLost: Event<Rbx>?, onTouchLongPress: Event<Rbx, { Vector2 }, Enum.UserInputState>?, onTouchPan: Event<Rbx, { Vector2 }, Vector2, Vector2, Enum.UserInputState>?, onTouchPinch: Event<Rbx, { Vector2 }, number, number, Enum.UserInputState>?, onTouchRotate: Event<Rbx, { Vector2 }, number, number, Enum.UserInputState>?, onTouchSwipe: Event<Rbx, Enum.SwipeDirection, number>?, onTouchTap: Event<Rbx, { Vector2 }>? }
+type GuiBase2dProps<Rbx> = GuiBaseProps<Rbx> & { AutoLocalize: boolean | Binding<boolean>?, RootLocalizationTable: LocalizationTable | Binding<LocalizationTable>?, SelectionBehaviorDown: Enum.SelectionBehavior | Binding<Enum.SelectionBehavior>?, SelectionBehaviorLeft: Enum.SelectionBehavior | Binding<Enum.SelectionBehavior>?, SelectionBehaviorRight: Enum.SelectionBehavior | Binding<Enum.SelectionBehavior>?, SelectionBehaviorUp: Enum.SelectionBehavior | Binding<Enum.SelectionBehavior>?, SelectionGroup: boolean | Binding<boolean>?, bindAbsolutePosition: BindProperty<Rbx>?, bindAbsoluteRotation: BindProperty<Rbx>?, bindAbsoluteSize: BindProperty<Rbx>?, onSelectionChanged: Event<Rbx, boolean, GuiObject, GuiObject>? }
 type GuiBaseProps<Rbx> = InstanceProps<Rbx>
-type GuiButtonProps<Rbx> = GuiObjectProps<Rbx> & { AutoButtonColor: boolean?, Modal: boolean?, Selected: boolean?, Style: Enum.ButtonStyle?, onActivated: Event<Rbx, InputObject, number>?, onMouseButton1Click: Event<Rbx>?, onMouseButton1Down: Event<Rbx, number, number>?, onMouseButton1Up: Event<Rbx, number, number>?, onMouseButton2Click: Event<Rbx>?, onMouseButton2Down: Event<Rbx, number, number>?, onMouseButton2Up: Event<Rbx, number, number>? }
+type GuiButtonProps<Rbx> = GuiObjectProps<Rbx> & { AutoButtonColor: boolean | Binding<boolean>?, Modal: boolean | Binding<boolean>?, Selected: boolean | Binding<boolean>?, Style: Enum.ButtonStyle | Binding<Enum.ButtonStyle>?, onActivated: Event<Rbx, InputObject, number>?, onMouseButton1Click: Event<Rbx>?, onMouseButton1Down: Event<Rbx, number, number>?, onMouseButton1Up: Event<Rbx, number, number>?, onMouseButton2Click: Event<Rbx>?, onMouseButton2Down: Event<Rbx, number, number>?, onMouseButton2Up: Event<Rbx, number, number>? }
 type GuiLabelProps<Rbx> = GuiObjectProps<Rbx>
-type LayerCollectorProps<Rbx> = GuiBase2dProps<Rbx> & { Enabled: boolean?, ResetOnSpawn: boolean?, ZIndexBehavior: Enum.ZIndexBehavior? }
-type SurfaceGuiBaseProps<Rbx> = LayerCollectorProps<Rbx> & { Active: boolean?, Adornee: Instance?, Face: Enum.NormalId? }
-type BasePartProps<Rbx> = PVInstanceProps<Rbx> & { Anchored: boolean?, AssemblyAngularVelocity: Vector3?, AssemblyLinearVelocity: Vector3?, BackSurface: Enum.SurfaceType?, BottomSurface: Enum.SurfaceType?, BrickColor: BrickColor?, CFrame: CFrame?, CanCollide: boolean?, CanQuery: boolean?, CanTouch: boolean?, CastShadow: boolean?, CollisionGroup: string?, CollisionGroupId: number?, Color: Color3?, CustomPhysicalProperties: PhysicalProperties?, FrontSurface: Enum.SurfaceType?, LeftSurface: Enum.SurfaceType?, LocalTransparencyModifier: number?, Locked: boolean?, Massless: boolean?, Material: Enum.Material?, MaterialVariant: string?, Orientation: Vector3?, PivotOffset: CFrame?, Position: Vector3?, Reflectance: number?, RightSurface: Enum.SurfaceType?, RootPriority: number?, Rotation: Vector3?, Size: Vector3?, TopSurface: Enum.SurfaceType?, Transparency: number?, onTouchEnded: Event<Rbx, BasePart>?, onTouched: Event<Rbx, BasePart>? }
-type PVInstanceProps<Rbx> = InstanceProps<Rbx> & { Origin: CFrame? }
+type LayerCollectorProps<Rbx> = GuiBase2dProps<Rbx> & { Enabled: boolean | Binding<boolean>?, ResetOnSpawn: boolean | Binding<boolean>?, ZIndexBehavior: Enum.ZIndexBehavior | Binding<Enum.ZIndexBehavior>? }
+type SurfaceGuiBaseProps<Rbx> = LayerCollectorProps<Rbx> & { Active: boolean | Binding<boolean>?, Adornee: Instance | Binding<Instance>?, Face: Enum.NormalId | Binding<Enum.NormalId>? }
+type BasePartProps<Rbx> = PVInstanceProps<Rbx> & { Anchored: boolean | Binding<boolean>?, AssemblyAngularVelocity: Vector3 | Binding<Vector3>?, AssemblyLinearVelocity: Vector3 | Binding<Vector3>?, BackSurface: Enum.SurfaceType | Binding<Enum.SurfaceType>?, BottomSurface: Enum.SurfaceType | Binding<Enum.SurfaceType>?, BrickColor: BrickColor | Binding<BrickColor>?, CFrame: CFrame | Binding<CFrame>?, CanCollide: boolean | Binding<boolean>?, CanQuery: boolean | Binding<boolean>?, CanTouch: boolean | Binding<boolean>?, CastShadow: boolean | Binding<boolean>?, CollisionGroup: string | Binding<string>?, CollisionGroupId: number | Binding<number>?, Color: Color3 | Binding<Color3>?, CustomPhysicalProperties: PhysicalProperties | Binding<PhysicalProperties>?, FrontSurface: Enum.SurfaceType | Binding<Enum.SurfaceType>?, LeftSurface: Enum.SurfaceType | Binding<Enum.SurfaceType>?, LocalTransparencyModifier: number | Binding<number>?, Locked: boolean | Binding<boolean>?, Massless: boolean | Binding<boolean>?, Material: Enum.Material | Binding<Enum.Material>?, MaterialVariant: string | Binding<string>?, Orientation: Vector3 | Binding<Vector3>?, PivotOffset: CFrame | Binding<CFrame>?, Position: Vector3 | Binding<Vector3>?, Reflectance: number | Binding<number>?, RightSurface: Enum.SurfaceType | Binding<Enum.SurfaceType>?, RootPriority: number | Binding<number>?, Rotation: Vector3 | Binding<Vector3>?, Size: Vector3 | Binding<Vector3>?, TopSurface: Enum.SurfaceType | Binding<Enum.SurfaceType>?, Transparency: number | Binding<number>?, onTouchEnded: Event<Rbx, BasePart>?, onTouched: Event<Rbx, BasePart>? }
+type PVInstanceProps<Rbx> = InstanceProps<Rbx> & { Origin: CFrame | Binding<CFrame>? }
 type FormFactorPartProps<Rbx> = BasePartProps<Rbx>
-type PartProps<Rbx> = FormFactorPartProps<Rbx> & { Shape: Enum.PartType? }
+type PartProps<Rbx> = FormFactorPartProps<Rbx> & { Shape: Enum.PartType | Binding<Enum.PartType>? }
 type TriangleMeshPartProps<Rbx> = BasePartProps<Rbx>
-type PartOperationProps<Rbx> = TriangleMeshPartProps<Rbx> & { UsePartColor: boolean? }
+type PartOperationProps<Rbx> = TriangleMeshPartProps<Rbx> & { UsePartColor: boolean | Binding<boolean>? }
 type UIConstraintProps<Rbx> = UIComponentProps<Rbx>
 type UIComponentProps<Rbx> = UIBaseProps<Rbx>
 type UIBaseProps<Rbx> = InstanceProps<Rbx>
-type UIGridStyleLayoutProps<Rbx> = UILayoutProps<Rbx> & { FillDirection: Enum.FillDirection?, HorizontalAlignment: Enum.HorizontalAlignment?, SortOrder: Enum.SortOrder?, VerticalAlignment: Enum.VerticalAlignment?, bindAbsoluteContentSize: BindProperty<Rbx>? }
+type UIGridStyleLayoutProps<Rbx> = UILayoutProps<Rbx> & { FillDirection: Enum.FillDirection | Binding<Enum.FillDirection>?, HorizontalAlignment: Enum.HorizontalAlignment | Binding<Enum.HorizontalAlignment>?, SortOrder: Enum.SortOrder | Binding<Enum.SortOrder>?, VerticalAlignment: Enum.VerticalAlignment | Binding<Enum.VerticalAlignment>?, bindAbsoluteContentSize: BindProperty<Rbx>? }
 type UILayoutProps<Rbx> = UIComponentProps<Rbx>
-type CameraProps = InstanceProps<Camera> & { CFrame: CFrame?, CameraSubject: Humanoid | BasePart | nil?, CameraType: Enum.CameraType?, DiagonalFieldOfView: number?, FieldOfView: number?, FieldOfViewMode: Enum.FieldOfViewMode?, Focus: CFrame?, HeadLocked: boolean?, HeadScale: number?, MaxAxisFieldOfView: number?, onFirstPersonTransition: Event<Camera, boolean>?, onInterpolationFinished: Event<Camera>? }
-type CanvasGroupProps = GuiObjectProps<CanvasGroup> & { GroupColor3: Color3?, GroupTransparency: number? }
-type FrameProps = GuiObjectProps<Frame> & { Style: Enum.FrameStyle? }
-type ImageButtonProps = GuiButtonProps<ImageButton> & { HoverImage: string?, Image: string?, ImageColor3: Color3?, ImageRectOffset: Vector2?, ImageRectSize: Vector2?, ImageTransparency: number?, PressedImage: string?, ResampleMode: Enum.ResamplerMode?, ScaleType: Enum.ScaleType?, SliceCenter: Rect?, SliceScale: number?, TileSize: UDim2? }
-type TextButtonProps = GuiButtonProps<TextButton> & { Font: Enum.Font?, FontFace: Font?, LineHeight: number?, MaxVisibleGraphemes: number?, RichText: boolean?, Text: string?, TextColor3: Color3?, TextScaled: boolean?, TextSize: number?, TextStrokeColor3: Color3?, TextStrokeTransparency: number?, TextTransparency: number?, TextTruncate: Enum.TextTruncate?, TextWrapped: boolean?, TextXAlignment: Enum.TextXAlignment?, TextYAlignment: Enum.TextYAlignment?, bindTextBounds: BindProperty<TextButton>? }
-type ImageLabelProps = GuiLabelProps<ImageLabel> & { Image: string?, ImageColor3: Color3?, ImageRectOffset: Vector2?, ImageRectSize: Vector2?, ImageTransparency: number?, ResampleMode: Enum.ResamplerMode?, ScaleType: Enum.ScaleType?, SliceCenter: Rect?, SliceScale: number?, TileSize: UDim2? }
-type TextLabelProps = GuiLabelProps<TextLabel> & { Font: Enum.Font?, FontFace: Font?, LineHeight: number?, MaxVisibleGraphemes: number?, RichText: boolean?, Text: string?, TextColor3: Color3?, TextScaled: boolean?, TextSize: number?, TextStrokeColor3: Color3?, TextStrokeTransparency: number?, TextTransparency: number?, TextTruncate: Enum.TextTruncate?, TextWrapped: boolean?, TextXAlignment: Enum.TextXAlignment?, TextYAlignment: Enum.TextYAlignment?, bindTextBounds: BindProperty<TextLabel>? }
-type ScrollingFrameProps = GuiObjectProps<ScrollingFrame> & { AutomaticCanvasSize: Enum.AutomaticSize?, BottomImage: string?, CanvasPosition: Vector2?, CanvasSize: UDim2?, ElasticBehavior: Enum.ElasticBehavior?, HorizontalScrollBarInset: Enum.ScrollBarInset?, MidImage: string?, ScrollBarImageColor3: Color3?, ScrollBarImageTransparency: number?, ScrollBarThickness: number?, ScrollingDirection: Enum.ScrollingDirection?, ScrollingEnabled: boolean?, TopImage: string?, VerticalScrollBarInset: Enum.ScrollBarInset?, VerticalScrollBarPosition: Enum.VerticalScrollBarPosition?, bindAbsoluteCanvasSize: BindProperty<ScrollingFrame>?, bindAbsoluteWindowSize: BindProperty<ScrollingFrame>? }
-type TextBoxProps = GuiObjectProps<TextBox> & { ClearTextOnFocus: boolean?, CursorPosition: number?, Font: Enum.Font?, FontFace: Font?, LineHeight: number?, MaxVisibleGraphemes: number?, MultiLine: boolean?, PlaceholderColor3: Color3?, PlaceholderText: string?, RichText: boolean?, SelectionStart: number?, ShowNativeInput: boolean?, Text: string?, TextColor3: Color3?, TextEditable: boolean?, TextScaled: boolean?, TextSize: number?, TextStrokeColor3: Color3?, TextStrokeTransparency: number?, TextTransparency: number?, TextTruncate: Enum.TextTruncate?, TextWrapped: boolean?, TextXAlignment: Enum.TextXAlignment?, TextYAlignment: Enum.TextYAlignment?, bindText: BindProperty<TextBox>?, bindTextBounds: BindProperty<TextBox>?, onFocusLost: Event<TextBox, boolean, InputObject>?, onFocused: Event<TextBox>?, onReturnPressedFromOnScreenKeyboard: Event<TextBox>? }
-type VideoFrameProps = GuiObjectProps<VideoFrame> & { Looped: boolean?, Playing: boolean?, TimePosition: number?, Video: string?, Volume: number?, onDidLoop: Event<VideoFrame, string>?, onEnded: Event<VideoFrame, string>?, onLoaded: Event<VideoFrame, string>?, onPaused: Event<VideoFrame, string>?, onPlayed: Event<VideoFrame, string>? }
-type ViewportFrameProps = GuiObjectProps<ViewportFrame> & { Ambient: Color3?, CurrentCamera: Camera?, ImageColor3: Color3?, ImageTransparency: number?, LightColor: Color3?, LightDirection: Vector3? }
-type BillboardGuiProps = LayerCollectorProps<BillboardGui> & { Active: boolean?, Adornee: Instance?, AlwaysOnTop: boolean?, Brightness: number?, ClipsDescendants: boolean?, DistanceLowerLimit: number?, DistanceStep: number?, DistanceUpperLimit: number?, ExtentsOffset: Vector3?, ExtentsOffsetWorldSpace: Vector3?, LightInfluence: number?, MaxDistance: number?, PlayerToHideFrom: Instance?, Size: UDim2?, SizeOffset: Vector2?, StudsOffset: Vector3?, StudsOffsetWorldSpace: Vector3? }
-type ScreenGuiProps = LayerCollectorProps<ScreenGui> & { ClipToDeviceSafeArea: boolean?, DisplayOrder: number?, IgnoreGuiInset: boolean?, SafeAreaCompatibility: Enum.SafeAreaCompatibility?, ScreenInsets: Enum.ScreenInsets? }
-type AdGuiProps = SurfaceGuiBaseProps<AdGui> & { AdShape: Enum.AdShape? }
-type SurfaceGuiProps = SurfaceGuiBaseProps<SurfaceGui> & { AlwaysOnTop: boolean?, Brightness: number?, CanvasSize: Vector2?, ClipsDescendants: boolean?, LightInfluence: number?, PixelsPerStud: number?, SizingMode: Enum.SurfaceGuiSizingMode?, ToolPunchThroughDistance: number?, ZOffset: number? }
+type CameraProps = InstanceProps<Camera> & { CFrame: CFrame | Binding<CFrame>?, CameraSubject: Humanoid | BasePart | nil | Binding<Humanoid | BasePart | nil>?, CameraType: Enum.CameraType | Binding<Enum.CameraType>?, DiagonalFieldOfView: number | Binding<number>?, FieldOfView: number | Binding<number>?, FieldOfViewMode: Enum.FieldOfViewMode | Binding<Enum.FieldOfViewMode>?, Focus: CFrame | Binding<CFrame>?, HeadLocked: boolean | Binding<boolean>?, HeadScale: number | Binding<number>?, MaxAxisFieldOfView: number | Binding<number>?, onFirstPersonTransition: Event<Camera, boolean>?, onInterpolationFinished: Event<Camera>? }
+type CanvasGroupProps = GuiObjectProps<CanvasGroup> & { GroupColor3: Color3 | Binding<Color3>?, GroupTransparency: number | Binding<number>? }
+type FrameProps = GuiObjectProps<Frame> & { Style: Enum.FrameStyle | Binding<Enum.FrameStyle>? }
+type ImageButtonProps = GuiButtonProps<ImageButton> & { HoverImage: string | Binding<string>?, Image: string | Binding<string>?, ImageColor3: Color3 | Binding<Color3>?, ImageRectOffset: Vector2 | Binding<Vector2>?, ImageRectSize: Vector2 | Binding<Vector2>?, ImageTransparency: number | Binding<number>?, PressedImage: string | Binding<string>?, ResampleMode: Enum.ResamplerMode | Binding<Enum.ResamplerMode>?, ScaleType: Enum.ScaleType | Binding<Enum.ScaleType>?, SliceCenter: Rect | Binding<Rect>?, SliceScale: number | Binding<number>?, TileSize: UDim2 | Binding<UDim2>? }
+type TextButtonProps = GuiButtonProps<TextButton> & { Font: Enum.Font | Binding<Enum.Font>?, FontFace: Font | Binding<Font>?, LineHeight: number | Binding<number>?, MaxVisibleGraphemes: number | Binding<number>?, RichText: boolean | Binding<boolean>?, Text: string | Binding<string>?, TextColor3: Color3 | Binding<Color3>?, TextScaled: boolean | Binding<boolean>?, TextSize: number | Binding<number>?, TextStrokeColor3: Color3 | Binding<Color3>?, TextStrokeTransparency: number | Binding<number>?, TextTransparency: number | Binding<number>?, TextTruncate: Enum.TextTruncate | Binding<Enum.TextTruncate>?, TextWrapped: boolean | Binding<boolean>?, TextXAlignment: Enum.TextXAlignment | Binding<Enum.TextXAlignment>?, TextYAlignment: Enum.TextYAlignment | Binding<Enum.TextYAlignment>?, bindTextBounds: BindProperty<TextButton>? }
+type ImageLabelProps = GuiLabelProps<ImageLabel> & { Image: string | Binding<string>?, ImageColor3: Color3 | Binding<Color3>?, ImageRectOffset: Vector2 | Binding<Vector2>?, ImageRectSize: Vector2 | Binding<Vector2>?, ImageTransparency: number | Binding<number>?, ResampleMode: Enum.ResamplerMode | Binding<Enum.ResamplerMode>?, ScaleType: Enum.ScaleType | Binding<Enum.ScaleType>?, SliceCenter: Rect | Binding<Rect>?, SliceScale: number | Binding<number>?, TileSize: UDim2 | Binding<UDim2>? }
+type TextLabelProps = GuiLabelProps<TextLabel> & { Font: Enum.Font | Binding<Enum.Font>?, FontFace: Font | Binding<Font>?, LineHeight: number | Binding<number>?, MaxVisibleGraphemes: number | Binding<number>?, RichText: boolean | Binding<boolean>?, Text: string | Binding<string>?, TextColor3: Color3 | Binding<Color3>?, TextScaled: boolean | Binding<boolean>?, TextSize: number | Binding<number>?, TextStrokeColor3: Color3 | Binding<Color3>?, TextStrokeTransparency: number | Binding<number>?, TextTransparency: number | Binding<number>?, TextTruncate: Enum.TextTruncate | Binding<Enum.TextTruncate>?, TextWrapped: boolean | Binding<boolean>?, TextXAlignment: Enum.TextXAlignment | Binding<Enum.TextXAlignment>?, TextYAlignment: Enum.TextYAlignment | Binding<Enum.TextYAlignment>?, bindTextBounds: BindProperty<TextLabel>? }
+type ScrollingFrameProps = GuiObjectProps<ScrollingFrame> & { AutomaticCanvasSize: Enum.AutomaticSize | Binding<Enum.AutomaticSize>?, BottomImage: string | Binding<string>?, CanvasPosition: Vector2 | Binding<Vector2>?, CanvasSize: UDim2 | Binding<UDim2>?, ElasticBehavior: Enum.ElasticBehavior | Binding<Enum.ElasticBehavior>?, HorizontalScrollBarInset: Enum.ScrollBarInset | Binding<Enum.ScrollBarInset>?, MidImage: string | Binding<string>?, ScrollBarImageColor3: Color3 | Binding<Color3>?, ScrollBarImageTransparency: number | Binding<number>?, ScrollBarThickness: number | Binding<number>?, ScrollingDirection: Enum.ScrollingDirection | Binding<Enum.ScrollingDirection>?, ScrollingEnabled: boolean | Binding<boolean>?, TopImage: string | Binding<string>?, VerticalScrollBarInset: Enum.ScrollBarInset | Binding<Enum.ScrollBarInset>?, VerticalScrollBarPosition: Enum.VerticalScrollBarPosition | Binding<Enum.VerticalScrollBarPosition>?, bindAbsoluteCanvasSize: BindProperty<ScrollingFrame>?, bindAbsoluteWindowSize: BindProperty<ScrollingFrame>? }
+type TextBoxProps = GuiObjectProps<TextBox> & { ClearTextOnFocus: boolean | Binding<boolean>?, CursorPosition: number | Binding<number>?, Font: Enum.Font | Binding<Enum.Font>?, FontFace: Font | Binding<Font>?, LineHeight: number | Binding<number>?, MaxVisibleGraphemes: number | Binding<number>?, MultiLine: boolean | Binding<boolean>?, PlaceholderColor3: Color3 | Binding<Color3>?, PlaceholderText: string | Binding<string>?, RichText: boolean | Binding<boolean>?, SelectionStart: number | Binding<number>?, ShowNativeInput: boolean | Binding<boolean>?, Text: string | Binding<string>?, TextColor3: Color3 | Binding<Color3>?, TextEditable: boolean | Binding<boolean>?, TextScaled: boolean | Binding<boolean>?, TextSize: number | Binding<number>?, TextStrokeColor3: Color3 | Binding<Color3>?, TextStrokeTransparency: number | Binding<number>?, TextTransparency: number | Binding<number>?, TextTruncate: Enum.TextTruncate | Binding<Enum.TextTruncate>?, TextWrapped: boolean | Binding<boolean>?, TextXAlignment: Enum.TextXAlignment | Binding<Enum.TextXAlignment>?, TextYAlignment: Enum.TextYAlignment | Binding<Enum.TextYAlignment>?, bindText: BindProperty<TextBox>?, bindTextBounds: BindProperty<TextBox>?, onFocusLost: Event<TextBox, boolean, InputObject>?, onFocused: Event<TextBox>?, onReturnPressedFromOnScreenKeyboard: Event<TextBox>? }
+type VideoFrameProps = GuiObjectProps<VideoFrame> & { Looped: boolean | Binding<boolean>?, Playing: boolean | Binding<boolean>?, TimePosition: number | Binding<number>?, Video: string | Binding<string>?, Volume: number | Binding<number>?, onDidLoop: Event<VideoFrame, string>?, onEnded: Event<VideoFrame, string>?, onLoaded: Event<VideoFrame, string>?, onPaused: Event<VideoFrame, string>?, onPlayed: Event<VideoFrame, string>? }
+type ViewportFrameProps = GuiObjectProps<ViewportFrame> & { Ambient: Color3 | Binding<Color3>?, CurrentCamera: Camera | Binding<Camera>?, ImageColor3: Color3 | Binding<Color3>?, ImageTransparency: number | Binding<number>?, LightColor: Color3 | Binding<Color3>?, LightDirection: Vector3 | Binding<Vector3>? }
+type BillboardGuiProps = LayerCollectorProps<BillboardGui> & { Active: boolean | Binding<boolean>?, Adornee: Instance | Binding<Instance>?, AlwaysOnTop: boolean | Binding<boolean>?, Brightness: number | Binding<number>?, ClipsDescendants: boolean | Binding<boolean>?, DistanceLowerLimit: number | Binding<number>?, DistanceStep: number | Binding<number>?, DistanceUpperLimit: number | Binding<number>?, ExtentsOffset: Vector3 | Binding<Vector3>?, ExtentsOffsetWorldSpace: Vector3 | Binding<Vector3>?, LightInfluence: number | Binding<number>?, MaxDistance: number | Binding<number>?, PlayerToHideFrom: Instance | Binding<Instance>?, Size: UDim2 | Binding<UDim2>?, SizeOffset: Vector2 | Binding<Vector2>?, StudsOffset: Vector3 | Binding<Vector3>?, StudsOffsetWorldSpace: Vector3 | Binding<Vector3>? }
+type ScreenGuiProps = LayerCollectorProps<ScreenGui> & { ClipToDeviceSafeArea: boolean | Binding<boolean>?, DisplayOrder: number | Binding<number>?, IgnoreGuiInset: boolean | Binding<boolean>?, SafeAreaCompatibility: Enum.SafeAreaCompatibility | Binding<Enum.SafeAreaCompatibility>?, ScreenInsets: Enum.ScreenInsets | Binding<Enum.ScreenInsets>? }
+type AdGuiProps = SurfaceGuiBaseProps<AdGui> & { AdShape: Enum.AdShape | Binding<Enum.AdShape>? }
+type SurfaceGuiProps = SurfaceGuiBaseProps<SurfaceGui> & { AlwaysOnTop: boolean | Binding<boolean>?, Brightness: number | Binding<number>?, CanvasSize: Vector2 | Binding<Vector2>?, ClipsDescendants: boolean | Binding<boolean>?, LightInfluence: number | Binding<number>?, PixelsPerStud: number | Binding<number>?, SizingMode: Enum.SurfaceGuiSizingMode | Binding<Enum.SurfaceGuiSizingMode>?, ToolPunchThroughDistance: number | Binding<number>?, ZOffset: number | Binding<number>? }
 type CornerWedgePartProps = BasePartProps<CornerWedgePart> & {  }
-type SeatProps = PartProps<Seat> & { Disabled: boolean? }
-type SpawnLocationProps = PartProps<SpawnLocation> & { AllowTeamChangeOnTouch: boolean?, Duration: number?, Enabled: boolean?, Neutral: boolean?, TeamColor: BrickColor? }
+type SeatProps = PartProps<Seat> & { Disabled: boolean | Binding<boolean>? }
+type SpawnLocationProps = PartProps<SpawnLocation> & { AllowTeamChangeOnTouch: boolean | Binding<boolean>?, Duration: number | Binding<number>?, Enabled: boolean | Binding<boolean>?, Neutral: boolean | Binding<boolean>?, TeamColor: BrickColor | Binding<BrickColor>? }
 type WedgePartProps = FormFactorPartProps<WedgePart> & {  }
-type MeshPartProps = TriangleMeshPartProps<MeshPart> & { TextureID: string? }
+type MeshPartProps = TriangleMeshPartProps<MeshPart> & { TextureID: string | Binding<string>? }
 type IntersectOperationProps = PartOperationProps<IntersectOperation> & {  }
 type NegateOperationProps = PartOperationProps<NegateOperation> & {  }
 type UnionOperationProps = PartOperationProps<UnionOperation> & {  }
-type TrussPartProps = BasePartProps<TrussPart> & { Style: Enum.Style? }
-type VehicleSeatProps = BasePartProps<VehicleSeat> & { Disabled: boolean?, HeadsUpDisplay: boolean?, MaxSpeed: number?, Steer: number?, SteerFloat: number?, Throttle: number?, ThrottleFloat: number?, Torque: number?, TurnSpeed: number? }
-type UIAspectRatioConstraintProps = UIConstraintProps<UIAspectRatioConstraint> & { AspectRatio: number?, AspectType: Enum.AspectType?, DominantAxis: Enum.DominantAxis? }
-type UISizeConstraintProps = UIConstraintProps<UISizeConstraint> & { MaxSize: Vector2?, MinSize: Vector2? }
-type UITextSizeConstraintProps = UIConstraintProps<UITextSizeConstraint> & { MaxTextSize: number?, MinTextSize: number? }
-type UICornerProps = UIComponentProps<UICorner> & { CornerRadius: UDim? }
-type UIGradientProps = UIComponentProps<UIGradient> & { Color: ColorSequence?, Enabled: boolean?, Offset: Vector2?, Rotation: number?, Transparency: NumberSequence? }
-type UIGridLayoutProps = UIGridStyleLayoutProps<UIGridLayout> & { CellPadding: UDim2?, CellSize: UDim2?, FillDirectionMaxCells: number?, StartCorner: Enum.StartCorner?, bindAbsoluteCellCount: BindProperty<UIGridLayout>?, bindAbsoluteCellSize: BindProperty<UIGridLayout>? }
-type UIListLayoutProps = UIGridStyleLayoutProps<UIListLayout> & { Padding: UDim? }
-type UIPageLayoutProps = UIGridStyleLayoutProps<UIPageLayout> & { Animated: boolean?, Circular: boolean?, EasingDirection: Enum.EasingDirection?, EasingStyle: Enum.EasingStyle?, GamepadInputEnabled: boolean?, Padding: UDim?, ScrollWheelInputEnabled: boolean?, TouchInputEnabled: boolean?, TweenTime: number?, onPageEnter: Event<UIPageLayout, Instance>?, onPageLeave: Event<UIPageLayout, Instance>?, onStopped: Event<UIPageLayout, Instance>? }
-type UITableLayoutProps = UIGridStyleLayoutProps<UITableLayout> & { FillEmptySpaceColumns: boolean?, FillEmptySpaceRows: boolean?, MajorAxis: Enum.TableMajorAxis?, Padding: UDim2? }
-type UIPaddingProps = UIComponentProps<UIPadding> & { PaddingBottom: UDim?, PaddingLeft: UDim?, PaddingRight: UDim?, PaddingTop: UDim? }
-type UIScaleProps = UIComponentProps<UIScale> & { Scale: number? }
-type UIStrokeProps = UIComponentProps<UIStroke> & { ApplyStrokeMode: Enum.ApplyStrokeMode?, Color: Color3?, Enabled: boolean?, LineJoinMode: Enum.LineJoinMode?, Thickness: number?, Transparency: number? }
+type TrussPartProps = BasePartProps<TrussPart> & { Style: Enum.Style | Binding<Enum.Style>? }
+type VehicleSeatProps = BasePartProps<VehicleSeat> & { Disabled: boolean | Binding<boolean>?, HeadsUpDisplay: boolean | Binding<boolean>?, MaxSpeed: number | Binding<number>?, Steer: number | Binding<number>?, SteerFloat: number | Binding<number>?, Throttle: number | Binding<number>?, ThrottleFloat: number | Binding<number>?, Torque: number | Binding<number>?, TurnSpeed: number | Binding<number>? }
+type UIAspectRatioConstraintProps = UIConstraintProps<UIAspectRatioConstraint> & { AspectRatio: number | Binding<number>?, AspectType: Enum.AspectType | Binding<Enum.AspectType>?, DominantAxis: Enum.DominantAxis | Binding<Enum.DominantAxis>? }
+type UISizeConstraintProps = UIConstraintProps<UISizeConstraint> & { MaxSize: Vector2 | Binding<Vector2>?, MinSize: Vector2 | Binding<Vector2>? }
+type UITextSizeConstraintProps = UIConstraintProps<UITextSizeConstraint> & { MaxTextSize: number | Binding<number>?, MinTextSize: number | Binding<number>? }
+type UICornerProps = UIComponentProps<UICorner> & { CornerRadius: UDim | Binding<UDim>? }
+type UIGradientProps = UIComponentProps<UIGradient> & { Color: ColorSequence | Binding<ColorSequence>?, Enabled: boolean | Binding<boolean>?, Offset: Vector2 | Binding<Vector2>?, Rotation: number | Binding<number>?, Transparency: NumberSequence | Binding<NumberSequence>? }
+type UIGridLayoutProps = UIGridStyleLayoutProps<UIGridLayout> & { CellPadding: UDim2 | Binding<UDim2>?, CellSize: UDim2 | Binding<UDim2>?, FillDirectionMaxCells: number | Binding<number>?, StartCorner: Enum.StartCorner | Binding<Enum.StartCorner>?, bindAbsoluteCellCount: BindProperty<UIGridLayout>?, bindAbsoluteCellSize: BindProperty<UIGridLayout>? }
+type UIListLayoutProps = UIGridStyleLayoutProps<UIListLayout> & { Padding: UDim | Binding<UDim>? }
+type UIPageLayoutProps = UIGridStyleLayoutProps<UIPageLayout> & { Animated: boolean | Binding<boolean>?, Circular: boolean | Binding<boolean>?, EasingDirection: Enum.EasingDirection | Binding<Enum.EasingDirection>?, EasingStyle: Enum.EasingStyle | Binding<Enum.EasingStyle>?, GamepadInputEnabled: boolean | Binding<boolean>?, Padding: UDim | Binding<UDim>?, ScrollWheelInputEnabled: boolean | Binding<boolean>?, TouchInputEnabled: boolean | Binding<boolean>?, TweenTime: number | Binding<number>?, onPageEnter: Event<UIPageLayout, Instance>?, onPageLeave: Event<UIPageLayout, Instance>?, onStopped: Event<UIPageLayout, Instance>? }
+type UITableLayoutProps = UIGridStyleLayoutProps<UITableLayout> & { FillEmptySpaceColumns: boolean | Binding<boolean>?, FillEmptySpaceRows: boolean | Binding<boolean>?, MajorAxis: Enum.TableMajorAxis | Binding<Enum.TableMajorAxis>?, Padding: UDim2 | Binding<UDim2>? }
+type UIPaddingProps = UIComponentProps<UIPadding> & { PaddingBottom: UDim | Binding<UDim>?, PaddingLeft: UDim | Binding<UDim>?, PaddingRight: UDim | Binding<UDim>?, PaddingTop: UDim | Binding<UDim>? }
+type UIScaleProps = UIComponentProps<UIScale> & { Scale: number | Binding<number>? }
+type UIStrokeProps = UIComponentProps<UIStroke> & { ApplyStrokeMode: Enum.ApplyStrokeMode | Binding<Enum.ApplyStrokeMode>?, Color: Color3 | Binding<Color3>?, Enabled: boolean | Binding<boolean>?, LineJoinMode: Enum.LineJoinMode | Binding<Enum.LineJoinMode>?, Thickness: number | Binding<number>?, Transparency: number | Binding<number>? }
 -- stylua: ignore end
-function froact.configure<Hooks>(config: {
+function froact.configure(config: {
 	Roact: any,
-	Hooks: HookFunction<any, Hooks>,
+	Hooks: HookFunction<any, any>,
 	defaultProperties: { DefaultPropertyConfig }?,
 	unpureByDefault: boolean?,
 })
+	local hooks: HookFunction<any, Hooks> = config.Hooks
 	local e = newE(
 		config.Roact,
 		config.Hooks,
@@ -428,11 +496,15 @@ function froact.configure<Hooks>(config: {
 	-- stylua: ignore end
 	return {
 		Roact = config.Roact,
-		Hooks = config.Hooks,
+		Hooks = hooks,
 		e = e,
-		c = newC(config.Roact, config.Hooks, config.unpureByDefault),
+		c = newC(config.Roact, hooks, config.unpureByDefault),
 		list = newList(config.Roact),
 		template = newTemplate(config.Roact, config.unpureByDefault),
+		createRef = newCreateRef(config.Roact),
+		createBinding = newCreateBinding(config.Roact),
+		join = newJoin(config.Roact),
+		map = newMap(config.Roact),
 		Camera = Camera,
 		CanvasGroup = CanvasGroup,
 		Frame = Frame,
